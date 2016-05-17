@@ -6,6 +6,8 @@ The camera can be controlled from a Python command prompt, via a web browser, or
 
 ## Overview
 
+The Raspberry Pi is a low cost ($35) computer that runs Linux. In addition to USB, ethernet, and HDMI connectors, the Raspberry Pi has a dedicated camera port and low level digital input and output (DIO). Both the camera and DIO pins can be programmed easily using Python.
+
 Once the camera is armed, it will continuously record a circular stream of video in memory. When a trigger is received, the the video will begin being saved to disk. In addition to saving the video after a trigger, the video before the trigger will also be saved. This has the distinct advantage of given you a record of what your animal was doing  before a trial was started. In many cases, 'bad trials' can be found because there was a lot of movement (or some other abberent event) before a trial began.
 
 ## Parts list
@@ -16,9 +18,17 @@ These parts are widely available at many different online sellers including: Spa
  - SD card
  - Power supply
  - USB stick to save video
+ - Voltage level shifter
  - Raspberry Pi NoIR camera
+ - Pi camera ribbon cables (2 meters)
  - IR LEDS
- - Cables to wire the Raspberry Pi to digital TTL lines
+ - Cables to wire the Raspberry Pi to digital lines
+ - Pi Camera ribbon cable to HDMI converter
+ - [optional] 5V relay to allow Pi to switch higher voltage power (5V or 12V) on/off
+ 
+While the cost of the Pi is cheap, the price adds up with all the additional pieces needed. In the end, the total cost should be $100 to $150.
+
+The Raspberry Pi can only accept digital signals at 3.5V. Many devices use 5V for digital signals. Thus, a level shifter is needed to convert 5V to 3.5V. This can be easily wired by hand as a voltage divider or purchased as a premade circuit board.
 
 ## Configuring a Raspberry Pi
 
@@ -32,6 +42,13 @@ We are not going to provide a full tutorial here and assume you have a functioni
  - AFP to mount/share folders with OS X (SMB will also work with OS X)
  - StartUpMailer to have the Raspberry Pi email with its IP address when it boots
 
+## Wiring the system
+
+ - Connect Camera to Raspberry Pi
+ - Connect digital lines to the Raspberry Pi (be sure to convert 5V lines to 3.5V)
+ - Ground the Raspberry Pi to the digital line ground/shield
+ - Connect LEDs to the Raspberry Pi. If LEDs need a lot of power, hook them up with a 5V relay.
+ 
 ## Required Python libraries
 
 ### Python interface
@@ -111,10 +128,16 @@ Test the camera with
 
     raspistill -o tst.jpg
 
+If the camera triggering is erratic or the Raspberry is missing fast pulses, check that all digital lines going to the Raspberry Pi are grounded. It is good practice to connect the Raspberry Pi ground pins to the ground (shield) of any digital lines.
+
 See this to auto mount an SMB share on boot
 
-    http://raspberrypi.stackexchange.com/questions/34444/cant-get-a-cifs-network-drive-to-mount-on-boot
+   http://raspberrypi.stackexchange.com/questions/34444/cant-get-a-cifs-network-drive-to-mount-on-boot
 
+## To Do
+ - Implement a Flask homepage to provide buttons to control camera and feedback during a trial.
+ - Add control and interface for two LEDs (e.g. IR and white).
+ 
 [piicamera]: http://picamera.readthedocs.io/en/release-1.10/
 [configparser]: https://docs.python.org/2/library/configparser.html
 [flask]: http://flask.pocoo.org
