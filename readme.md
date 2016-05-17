@@ -6,9 +6,15 @@ The camera can be controlled from a Python command prompt, via a web browser, or
 
 ## Overview
 
+### Raspberry Pi
+
 The Raspberry Pi is a low cost ($35) computer that runs Linux. In addition to USB, ethernet, and HDMI connectors, the Raspberry Pi has a dedicated camera port and low level digital input and output (DIO). Both the camera and DIO pins can be programmed easily using Python.
 
-Once the camera is armed, it will continuously record a circular stream of video in memory. When a trigger is received, the the video will begin being saved to disk. In addition to saving the video after a trigger, the video before the trigger will also be saved. This has the distinct advantage of given you a record of what your animal was doing  before a trial was started. In many cases, 'bad trials' can be found because there was a lot of movement (or some other abberent event) before a trial began.
+The Raspberry Pi provides an end-to-end open source system. Both the hardware and the low level software is provided by The Raspberry Pi Foundation and an active developer community.
+
+### Software implementation
+
+The software provided here will run a Raspberry Pi camera as a slave to other devices already in place for an experiment. Once the camera is armed, it will continuously record a circular stream of video in memory. When a trigger is received, the the video will begin being saved to disk. In addition to saving the video after a trigger, the video before the trigger will also be saved. This has the distinct advantage of given you a record of what your animal was doing  before a trial was started. In many cases, 'bad trials' can be found because there was a lot of movement (or some other abberent event) before a trial began.
 
 ## Parts list
 
@@ -42,27 +48,29 @@ We are not going to provide a full tutorial here and assume you have a functioni
  - AFP to mount/share folders with OS X (SMB will also work with OS X)
  - StartUpMailer to have the Raspberry Pi email with its IP address when it boots
 
-## Wiring the system
+## Building the system
+
+### Wiring the system
 
  - Connect Camera to Raspberry Pi
  - Connect digital lines to the Raspberry Pi (be sure to convert 5V lines to 3.5V)
  - Ground the Raspberry Pi to the digital line ground/shield
  - Connect LEDs to the Raspberry Pi. If LEDs need a lot of power, hook them up with a 5V relay.
  
-## Required Python libraries
+### Installing required Python libraries
 
-### Python interface
+#### Python interface
 
     RPi.GPIO
     picamera
     ConfigParser
 
-### Web Interface
+#### Web Interface
 
     flask
     flask-socketio
 
-## Camera Interface
+## Running the camera
 
 ### Python command line interface
 
