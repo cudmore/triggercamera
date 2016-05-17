@@ -78,7 +78,7 @@ Then, the camera can be controled through a web browser as follows.
      
 ## User configuration
 
-Modify config.txt and restart the camera code
+Modify config.ini and restart the camera code
 
 	[triggers]
 	triggerpin: 1
@@ -106,6 +106,6 @@ See this to auto mount SMB share on boot
 
 [lcdkeypad]: https://learn.adafruit.com/adafruit-16x2-character-lcd-plus-keypad-for-raspberry-pi
 
-[config.txt]: https://github.com/cudmore/timelapsecamera/blob/master/config.txt
+[config.ini]: https://github.com/cudmore/timelapsecamera/blob/master/config.ini
 [triggercamera]: https://github.com/cudmore/timelapsecamera/blob/master/triggercamera.py
 [triggercamera_app]: https://github.com/cudmore/timelapsecamera/blob/master/triggercamera_app.py

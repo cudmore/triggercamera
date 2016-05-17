@@ -33,7 +33,7 @@ import os, time, io, math, threading
 from datetime import datetime #to get fractional seconds
 import picamera
 import RPi.GPIO as GPIO
-import ConfigParser # to load config.txt
+import ConfigParser # to load config.ini
 import ftplib #to send recorded video to server
 
 class TriggerCamera(threading.Thread):
@@ -81,7 +81,7 @@ class TriggerCamera(threading.Thread):
         self.config['triggers']['triggerpin'] = 1
         self.config['triggers']['framepin'] = 2
 
-        #fill in parameters from config.txt
+        #fill in parameters from config.ini
         self.ParseConfigFile()
         
         #self.Config.get('Person','HasEyes')
@@ -143,10 +143,10 @@ class TriggerCamera(threading.Thread):
             print 'ParseConfigFile() not alowed while isArmed'
             return
             
-        print 'reading config file from config.txt'
+        print 'reading config file from config.ini'
 
         Config = ConfigParser.ConfigParser()
-        Config.read('config.txt')
+        Config.read('config.ini')
         Config.sections()
 		
         self.config['camera']['fps'] = int(Config.get('camera','fps'))
