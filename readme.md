@@ -24,14 +24,14 @@ We are not going to provide a full tutorial here and assume you have a functioni
     picamera
     ConfigParser
 
-### Flask Interface
+### Web Interface
 
     flask
     flask-socketio
     
 ## Camera Interface
 
-### Python command line
+### Python command line interface
 
 With [triggercamera.py][triggercamera], the camera can be controlled with a python command line interface. Once the camera is armed with 'ArmTrigger()' it will start and stop video recording following a TTL trigger.
 
@@ -49,7 +49,7 @@ Additional interface
 	tc.doTimelapse=1
 	tc.doTimelapse=0
 
-### Web
+### Web interface
 
 [triggercamera_app.py][triggercamera_app] provides a webserver allowing the camera to be controlled through a web browser. The web server is run using [Flask][flask] and provides a REST api as a wrapper around the triggercamera.py command line engine.
 
@@ -69,11 +69,11 @@ Then, the camera can be controled through a web browser as follows.
     http://192.168.1.12:5010/timelapseoff
     http://192.168.1.12:5010/lastimage
 
-**todo**: add an actual webpage with buttons to control the camera and give realtime feedback
+**to do:** add an actual webpage with buttons to control the camera and give realtime feedback
 
-### LCD and keypad
+### LCD and keypad interface
 
-NOT IMPLEMENTED. A hardware interface is provided if an [LCD/keypad][lcdkeypad] is attached to the Raspberry Pi.
+**NOT IMPLEMENTED.** A hardware interface is provided if an [LCD/keypad][lcdkeypad] is attached to the Raspberry Pi.
 
      
 ## User configuration
