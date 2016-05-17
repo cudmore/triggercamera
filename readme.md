@@ -4,6 +4,10 @@ This is a Raspberry Pi camera that can be configured to respond to digital TTL p
 
 The camera can be controlled from a Python command prompt, via a web browser, or using a hardware LCD/keypad.
 
+## Overview
+
+Once the camera is armed, it will continuously record a circular stream of video in memory. When a trigger is received, the the video will begin being saved to disk. In addition to saving the video after a trigger, the video before the trigger will also be saved. This has the distinct advantage of given you a record of what your animal was doing  before a trial was started. In many cases, 'bad trials' can be found because there was a lot of movement (or some other abberent event) before a trial began.
+
 ## Configuring a Raspberry Pi
 
 We are not going to provide a full tutorial here and assume you have a functioning raspberry pi. Here are some useful things to get you started
@@ -78,7 +82,7 @@ Then, the camera can be controled through a web browser as follows.
      
 ## User configuration
 
-Modify config.ini and restart the camera code
+Modify [config.ini][config.ini] and restart the camera code
 
 	[triggers]
 	triggerpin: 1
