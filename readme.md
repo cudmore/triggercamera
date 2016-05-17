@@ -6,15 +6,17 @@ The camera can be controlled from a Python command prompt, via a web browser, or
 
 ## Overview
 
-### Raspberry Pi
+### Background on the Raspberry Pi
 
-The Raspberry Pi is a low cost ($35) computer that runs Linux. In addition to USB, ethernet, and HDMI connectors, the Raspberry Pi has a dedicated camera port and low level digital input and output (DIO). Both the camera and DIO pins can be programmed easily using Python.
+The Raspberry Pi is a low cost ($35) computer that runs Linux. In addition to USB, ethernet, and HDMI connectors, the Raspberry Pi has a dedicated camera port and low level digital input and output (DIO). Both the camera and DIO pins can be easily programmed  using Python.
 
-The Raspberry Pi provides an end-to-end open source system. Both the hardware and the low level software is provided by The Raspberry Pi Foundation and an active developer community.
+The Raspberry Pi provides an end-to-end open source system. Both the hardware and the software is provided by [The Raspberry Pi Foundation][raspberrypi.org] and an active developer community. Given that all components are open-source, there are some very unique upgrades that one does not see in a commercial marketplace. The Raspberry Pi computer itself has undergone three rounds of system upgrades, increasing its processor speed by more than a factor of ten, expanding its onboard RAM, and adding onboard WIFI and Bluetooth while the price has remained fixed at $35. When it was first released, the 5MP Raspberry Pi camera could record 640x480 video at 30 frames-per-second. With a software upgrade this capability was extended to 60 and 90 frames per second and a second camera was then released increasing the sensor size from 5MP to 8MP while keeping the price fixed at $25.
 
 ### Software implementation
 
-The software provided here will run a Raspberry Pi camera as a slave to other devices already in place for an experiment. Once the camera is armed, it will continuously record a circular stream of video in memory. When a trigger is received, the the video will begin being saved to disk. In addition to saving the video after a trigger, the video before the trigger will also be saved. This has the distinct advantage of given you a record of what your animal was doing  before a trial was started. In many cases, 'bad trials' can be found because there was a lot of movement (or some other abberent event) before a trial began.
+The software provided here will run a Raspberry Pi camera as a slave to other devices already in place for an experiment.
+
+Once the camera is armed, it will continuously record a circular stream of video in memory. When a digital trigger is received, the the video will begin being saved to disk. In addition to saving the video after a trigger, the video before the trigger will also be saved. This has the distinct advantage of given you a record of what your animal was doing  before a trial was started. In many cases, 'bad trials' can be found because there was a lot of movement (or some other abberent event) before a trial began.
 
 ## Parts list
 
@@ -140,6 +142,8 @@ Modify [config.ini][config.ini] and restart the camera code
 
  - If the camera triggering is erratic or the Raspberry is missing fast pulses, check that all digital lines going to the Raspberry Pi are grounded. It is good practice to connect the Raspberry Pi ground pins to the ground (shield) of any digital lines.
 
+ - If the recorded video changes light-levels erratically, this is usllay due to fluctuations in the power to the Pi. Make sure the Pi has a DC power supply >2 Amps. If additional LEDs are being powered by the Pi, consider breaking these out with their own dedicated power supplies.
+ 
  - See this to auto mount an SMB share on boot
 
    http://raspberrypi.stackexchange.com/questions/34444/cant-get-a-cifs-network-drive-to-mount-on-boot
@@ -148,6 +152,7 @@ Modify [config.ini][config.ini] and restart the camera code
  - Implement a Flask homepage to provide buttons to control camera and feedback during a trial.
  - Add control and interface for two LEDs (e.g. IR and white).
  
+[raspberrypi.org]: https://www.raspberrypi.org
 [piicamera]: http://picamera.readthedocs.io/en/release-1.10/
 [configparser]: https://docs.python.org/2/library/configparser.html
 [flask]: http://flask.pocoo.org
