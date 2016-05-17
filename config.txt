@@ -1,0 +1,8 @@
+[triggers]
+triggerpin: 1
+framepin: 2
+
+[camera]
+fps: 30
+resolution: 640,480
+bufferSeconds = 5
