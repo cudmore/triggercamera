@@ -82,6 +82,8 @@ Additional interface
 	tc.doTimelapse=1
 	tc.doTimelapse=0
 
+	# todo: add interface to control two different LEDs
+	
 ### Web interface
 
 [triggercamera_app.py][triggercamera_app] provides a web server allowing the camera to be controlled through a web browser. The web server is run using [Flask][flask] and provides a REST api as a wrapper around the triggercamera.py command line engine.
@@ -124,13 +126,13 @@ Modify [config.ini][config.ini] and restart the camera code
 
 ## Troubleshooting
 
-Test the camera with
+ - Test the camera with
 
     raspistill -o tst.jpg
 
-If the camera triggering is erratic or the Raspberry is missing fast pulses, check that all digital lines going to the Raspberry Pi are grounded. It is good practice to connect the Raspberry Pi ground pins to the ground (shield) of any digital lines.
+ - If the camera triggering is erratic or the Raspberry is missing fast pulses, check that all digital lines going to the Raspberry Pi are grounded. It is good practice to connect the Raspberry Pi ground pins to the ground (shield) of any digital lines.
 
-See this to auto mount an SMB share on boot
+ - See this to auto mount an SMB share on boot
 
    http://raspberrypi.stackexchange.com/questions/34444/cant-get-a-cifs-network-drive-to-mount-on-boot
 
