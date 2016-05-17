@@ -110,6 +110,7 @@ See this to auto mount SMB share on boot
 
 [lcdkeypad]: https://learn.adafruit.com/adafruit-16x2-character-lcd-plus-keypad-for-raspberry-pi
 
-[config.ini]: https://github.com/cudmore/timelapsecamera/blob/master/config.ini
-[triggercamera]: https://github.com/cudmore/timelapsecamera/blob/master/triggercamera.py
-[triggercamera_app]: https://github.com/cudmore/timelapsecamera/blob/master/triggercamera_app.py
+[config.ini]: https://github.com/cudmore/triggercamera/blob/master/config.ini
+[triggercamera]: https://github.com/cudmore/triggercamera/blob/master/triggercamera.py
+[triggercamera_app]: https://github.com/cudmore/triggercamera/blob/master/triggercamera_app.py
+
