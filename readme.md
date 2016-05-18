@@ -72,6 +72,12 @@ We are not going to provide a full tutorial here and assume you have a functioni
     flask
     flask-socketio
 
+## Limitations
+
+The Raspberry Pi runs Linux and like other operating systems including Microsoft Windows and Mac OS it is not real time. There will always be unpredictable delays in the detection and generation of digital pulses. If the detection of a fast pulse or the timing of a pulse is critical for an experiment it is strongly suggested to use a more precise microcontroller like an Arduino.
+
+***[i can not give an estimate on the timing delays. Figure out how to quantify this. If I make something up I would say +/- 5 ms? This starts to be an issue if scanning is done at 30 fps ... 33 ms interval]***
+
 ## Running the camera
 
 ### Python command line interface
