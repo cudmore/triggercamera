@@ -89,14 +89,14 @@ class TriggerCamera(threading.Thread):
         #self.Config['camera'].resolution = (640, 480)
         #self.Config['camera'].fps = 30 # 30, 60, 90
         
-        #self.triggerPin = 2
-        self.framePin = 3
+        #self.triggerPin = 4
+        self.framePin = 17
         GPIO.setmode(GPIO.BCM)     # set up BCM GPIO numbering  
-        #GPIO.setup(self.triggerPin, GPIO.IN)    # set GPIO25 as input (button)  
-        GPIO.setup(self.framePin, GPIO.IN)    # set GPIO25 as input (button)  
-        #GPIO.add_event_detect(self.triggerPin, GPIO.BOTH, callback=self.triggerCallback, bouncetime=10)
-        #GPIO.add_event_detect(self.framePin, GPIO.BOTH, callback=self.frameCallback, bouncetime=10)
-        GPIO.add_event_detect(self.framePin, GPIO.BOTH, callback=self.framePinCallback, bouncetime=10)
+        #GPIO.setup(self.triggerPin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)    #
+        GPIO.setup(self.framePin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)    #
+        #GPIO.add_event_detect(self.triggerPin, GPIO.BOTH, callback=self.triggerCallback) #, bouncetime=10)
+        #GPIO.add_event_detect(self.framePin, GPIO.BOTH, callback=self.frameCallback) #, bouncetime=10)
+        GPIO.add_event_detect(self.framePin, GPIO.BOTH, callback=self.framePinCallback) #, bouncetime=10)
 
         self.lastFrameTime = 0 # set in newScanImageFrame() and checked in main run loop for stop condition
         self.lastFrameTimeout = 1 # seconds
@@ -108,16 +108,18 @@ class TriggerCamera(threading.Thread):
     	self.start()
     	self.startArm()
     	
-    # one callback for complex scanimage frame clock
+    '''
+    one callback for complex scanimage frame clock
+    this is a really bad solution that just assumes ANY change on pin
+    problem is when pulse is really fast, down on frame then reading for down will miss it and read an up
+    '''
     def framePinCallback(self, pin):
-        isUp = GPIO.input(self.framePin)
-        print 'framePinCallback()', isUp
         timestamp = self.GetTimestamp()
-        if isUp and not self.videoStarted:
-            #print 'framePinCallback() calling startVideo()'
+        if not self.videoStarted:
+            #print 'framePinCallback_up() calling startVideo()'
             self.startVideo()
-        elif not isUp and self.videoStarted:
-            #print 'framePinCallback() calling newScanImageFrame()'
+        else:
+            #print 'framePinCallback_down() calling newScanImageFrame()'
             self.newScanImageFrame(timestamp)
             
     '''
@@ -177,19 +179,25 @@ class TriggerCamera(threading.Thread):
     def startArm(self):
         print '\tVideoThread startArm()'
         if self.isArmed == 0:
-            print '\tVideoServer initializing camera'
-            self.camera = picamera.PiCamera()
-            self.camera.resolution = (640, 480)
-            #self.camera.led = 0
-            self.camera.start_preview()
-            self.camera.framerate = self.config['camera']['fps']
+            try:
+                print '\tVideoServer initializing camera'
+                self.camera = picamera.PiCamera()
+                self.camera.resolution = (640, 480)
+                #self.camera.led = 0
+                self.camera.start_preview()
+                self.camera.framerate = self.config['camera']['fps']
             
-            print '\tVideoServer.startArm() starting circular stream'
-            self.stream = picamera.PiCameraCircularIO(self.camera, seconds=self.bufferSeconds)
-            self.camera.start_recording(self.stream, format='h264')
+                print '\tVideoServer.startArm() starting circular stream'
+                self.stream = picamera.PiCameraCircularIO(self.camera, seconds=self.bufferSeconds)
+                self.camera.start_recording(self.stream, format='h264')
 
-            self.isArmed = 1 #order is important, must come after we instantiate camera
+                self.isArmed = 1 #order is important, must come after we instantiate camera
         
+            #except PiCameraMMALError:
+            #    print 'startArm() error: PiCameraMMALError'
+            except:
+                print 'startArm() error'
+                
     def stopArm(self):
         print '\tVideoThread stopArm()'
         timestamp = self.GetTimestamp()

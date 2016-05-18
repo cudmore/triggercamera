@@ -126,13 +126,22 @@ The camera can be controlled through a web browser as follows.
 Modify [config.ini][config.ini] and restart the camera code
 
 	[triggers]
-	triggerpin: 1
-	framepin: 2
+	triggerpin: 4
+	framepin: 17
+
+	[led]
+	led1pin: 2
+	led2pin: 3
 
 	[camera]
 	fps: 30
 	resolution: 640,480
 	bufferSeconds = 5
+
+	watchedpathon: 1
+	watchedpath: /video
+
+	savepath: /video
 
 ## Troubleshooting
 
@@ -151,6 +160,8 @@ Modify [config.ini][config.ini] and restart the camera code
 ## To Do
  - Implement a Flask homepage to provide buttons to control camera and feedback during a trial.
  - Add control and interface for two LEDs (e.g. IR and white).
+ 
+ - try using easydict so i can use'.' notation in code
  
 [raspberrypi.org]: https://www.raspberrypi.org
 [piicamera]: http://picamera.readthedocs.io/en/release-1.10/

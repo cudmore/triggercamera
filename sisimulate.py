@@ -49,13 +49,17 @@ framePin = 15
 GPIO.setmode(GPIO.BCM)     # set up BCM GPIO numbering  
 GPIO.setup(framePin, GPIO.OUT)    # set GPIO25 as input (button)  
 
+delaySeconds = 0.2 #sec
+numFrames = 10
+currentFrame = 1
+frameInterval = 0.1 #seconds
+
 def run():
+    global currentFrame
+    currentFrame = 1
+    
     GPIO.output(framePin, 0)
 
-    delaySeconds = 0.2 #sec
-    numFrames = 10
-    currentFrame = 1
-    frameInterval = 0.1 #seconds
 
     startSeconds = time.time() #seconds
     lastFrameSeconds = 0
@@ -74,7 +78,7 @@ def run():
                 currentFrame += 1
                 print now, 'frame', currentFrame
                 GPIO.output(framePin, 0)
-                time.sleep(0.005)
+                #time.sleep(0.005)
                 GPIO.output(framePin, 1)
                 if currentFrame > numFrames:
                     done = True
