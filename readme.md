@@ -1,4 +1,4 @@
-Please see the most up to date documentation at: [http://blog.cudmore.io/triggercamera/][http://blog.cudmore.io/triggercamera/]
+Please see the most up to date documentation at: [http://cudmore.github.com/triggercamera/][http://cudmore.github.com/triggercamera/]
 
 # Trigger Camera
 
