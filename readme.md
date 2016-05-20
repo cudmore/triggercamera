@@ -1,3 +1,5 @@
+Please see the most up to date documentation at: [http://blog.cudmore.io/triggercamera/][http://blog.cudmore.io/triggercamera/]
+
 # Trigger Camera
 
 This is a Raspberry Pi camera that responds to digital TTL pulses to start and stop video acquisition during an experiment. During video acquisition, external events such as frame times on a scanning microscope are watermarked on the video and saved to a text file.
