@@ -65,7 +65,7 @@ class TriggerCamera(threading.Thread):
         self.bufferSeconds = 5
 
         self.startTime = 0 #when we start recording in run(), triggered by startVideo()
-        self.recordDuration = 10 #seconds, set to infinity to then stop with stopVideo()
+        self.recordDuration = float('inf') #10 #seconds, set to infinity to then stop with stopVideo()
         
         self.doTimelapse = 0
         self.stillinterval = 5 #second
@@ -103,6 +103,9 @@ class TriggerCamera(threading.Thread):
         
         self.scanImageFrame = 0
         
+        #keep a list of frame,time
+        self.frameList = []
+        
     def ArmTrigger(self):
     	self.daemon = True
     	self.start()
@@ -114,13 +117,13 @@ class TriggerCamera(threading.Thread):
     problem is when pulse is really fast, down on frame then reading for down will miss it and read an up
     '''
     def framePinCallback(self, pin):
-        timestamp = self.GetTimestamp()
+        timeSeconds = time.time()
         if not self.videoStarted:
             #print 'framePinCallback_up() calling startVideo()'
             self.startVideo()
         else:
             #print 'framePinCallback_down() calling newScanImageFrame()'
-            self.newScanImageFrame(timestamp)
+            self.newScanImageFrame(timeSeconds)
             
     '''
     def triggerCallback(self, pin):
@@ -220,7 +223,7 @@ class TriggerCamera(threading.Thread):
         timestamp = self.GetTimestamp2()
         if self.isArmed and not self.videoStarted:
             print timestamp, 'startVideo()'
-            self.recordDuration = 5 #seconds, make this a parameter
+            self.recordDuration = float('inf') #5 #seconds, make this a parameter
             self.savename = timestamp.split('.')[0]
             self.scanImageFrame = 0
             self.videoStarted = 1
@@ -234,6 +237,8 @@ class TriggerCamera(threading.Thread):
             self.logFilePath = self.savepath + self.logFileName
             self.logfileWrite(timestamp, 'startVideo', None)
 
+            self.frameList = []
+
     def stopVideo(self):
         timestamp = self.GetTimestamp2()
         if self.isArmed and self.videoStarted:
@@ -242,21 +247,41 @@ class TriggerCamera(threading.Thread):
             if self.camera:
                 self.camera.annotate_text = ''
                 self.camera.annotate_background = None
-            self.logfileWrite(timestamp, 'stopVideo', None)
+
+            print 'writing log file once'
+            with open(self.logFilePath, 'a') as textfile:
+                textfile.write("seconds,frame\n")
+            with open(self.logFilePath, 'a') as textfile:
+                for item in self.frameList:
+                    textfile.write("%s\n" % item)
+
+            #self.logfileWrite(timestamp, 'stopVideo', None)
             self.logFileName = ''
             self.logFilePath = ''
-
-    def newScanImageFrame(self, timestamp):
-        self.lastFrameTime = time.time()
+  
+    def newScanImageFrame(self, timeSeconds):
+        '''
+        timeSeconds: time.time()
+        '''
+        localtime = time.localtime(timeSeconds)
+        dateStr = time.strftime('%Y%m%d',localtime)
+        timeStr = time.strftime('%H%M%S.%f', localtime)
+        
+        self.lastFrameTime = timeSeconds
         self.scanImageFrame += 1
+        self.camera.annotate_text = str(self.lastFrameTime) + ' ' + str(self.scanImageFrame)
         print timestamp, 'scanImageFrame is', self.scanImageFrame
-        self.logfileWrite(timestamp, 'frame', self.scanImageFrame)
-           
+        #self.logfileWrite(timestamp, 'frame', self.scanImageFrame)
+        
+        listLine = dateStr + ',' + timeStr + ',' + str(self.lastFrameTime) + ',' + str(self.scanImageFrame)
+        self.frameList.append(listLine)
+          
     #when creating this file, append a header with #fps=xxx,width=xxx,y=yyy
     def logfileWrite(self, timestamp, myStr, myVal):
-        if self.logFilePath:
-            with open(self.logFilePath, 'a') as textfile:
-                textfile.write(str(timestamp) + ',' + myStr + ',' + str(myVal) + '\n')
+        1
+        #if self.logFilePath:
+        #    with open(self.logFilePath, 'a') as textfile:
+        #        textfile.write(str(timestamp) + ',' + myStr + ',' + str(myVal) + '\n')
 
     def GetTimestamp(self):
         #returns integer seconds (for file names)
@@ -313,9 +338,11 @@ class TriggerCamera(threading.Thread):
                 
                             stopOnTrigger = 0
                             while not stopOnTrigger and self.videoStarted and (time.time()<(self.startTime + self.recordDuration)):
-                                self.camera.wait_recording(0.001)
-                                if not GPIO.input(self.framePin) and (time.time() > (self.lastFrameTime + self.lastFrameTimeout)):
-                                    print 'run() is stopping after last frame'
+                                self.camera.wait_recording(1)
+                                #self.camera.wait_recording(0.001)
+                                #if not GPIO.input(self.framePin) and (time.time() > (self.lastFrameTime + self.lastFrameTimeout)):
+                                if (time.time() > (self.lastFrameTime + self.lastFrameTimeout)):
+                                    print 'run() is stopping after last frame timeout'
                                     stopOnTrigger = 1
                                 
                             self.stopVideo() #
@@ -341,6 +368,8 @@ class TriggerCamera(threading.Thread):
                         #self.afterfilename = ''
                         #self.beforefilepath = ''
                         #self.afterfilepath = ''
+                        
+                        time.sleep(0.001)
                     except:
                         print '\tVideoServer except clause -->>ERROR'
                 print '\tVideoServer.run fell out of loop'
