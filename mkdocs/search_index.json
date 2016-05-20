@@ -117,13 +117,18 @@
         }, 
         {
             "location": "/dev/", 
-            "text": "mkDocs\n\n\n\n\nmkdocs new [dir-name]\n - Create a new project.\n\n\nmkdocs serve\n - Start the live-reloading docs server.\n\n\nmkdocs build\n - Build the documentation site.\n\n\nmkdocs help\n - Print this help message.\n\n\n\n\nProject layout\n\n\nmkdocs.yml    # The configuration file.\ndocs/\n    index.md  # The documentation homepage.\n    ...       # Other markdown pages, images and other files.", 
+            "text": "mkDocs\n\n\n\n\nmkdocs new [dir-name]\n - Create a new project.\n\n\nmkdocs serve\n - Start the live-reloading docs server.\n\n\nmkdocs build\n - Build the documentation site.\n\n\nmkdocs help\n - Print this help message.\n\n\n\n\nDeploy to github\n\n\nmkdocs gh-deploy will use the gh-pages branch of repository specified in mkdocs.yml\n\n\n# this will deploy to github gh-pages specified in mkdocs.yml\ncd tiggercamera #should have mkdocs.yml file\nmkdocs build --clean\nmkdocs gh-deploy --clean \n#site is then available at\nhttp://cudmore.github.io/triggercamera\n\n\n\nProject layout\n\n\nmkdocs.yml    # The configuration file.\ndocs/\n    index.md  # The documentation homepage.\n    ...       # Other markdown pages, images and other files.", 
             "title": "Dev"
         }, 
         {
             "location": "/dev/#mkdocs", 
             "text": "mkdocs new [dir-name]  - Create a new project.  mkdocs serve  - Start the live-reloading docs server.  mkdocs build  - Build the documentation site.  mkdocs help  - Print this help message.", 
             "title": "mkDocs"
+        }, 
+        {
+            "location": "/dev/#deploy-to-github", 
+            "text": "mkdocs gh-deploy will use the gh-pages branch of repository specified in mkdocs.yml  # this will deploy to github gh-pages specified in mkdocs.yml\ncd tiggercamera #should have mkdocs.yml file\nmkdocs build --clean\nmkdocs gh-deploy --clean \n#site is then available at\nhttp://cudmore.github.io/triggercamera", 
+            "title": "Deploy to github"
         }, 
         {
             "location": "/dev/#project-layout", 

@@ -9,7 +9,7 @@
         
         <link rel="shortcut icon" href="../img/favicon.ico">
 
-	<title>Dev - My Docs</title>
+	<title>Dev - Trigger Camera</title>
 
         <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
         <link href="../css/font-awesome-4.5.0.css" rel="stylesheet">
@@ -43,7 +43,7 @@
             
 
             <!-- Main title -->
-            <a class="navbar-brand" href="..">My Docs</a>
+            <a class="navbar-brand" href="..">Trigger Camera</a>
         </div>
 
         <!-- Expanded navigation -->
@@ -98,6 +98,8 @@
     
         <li class="main active"><a href="#mkdocs">mkDocs</a></li>
         
+            <li><a href="#deploy-to-github">Deploy to github</a></li>
+        
             <li><a href="#project-layout">Project layout</a></li>
         
     
@@ -112,6 +114,15 @@
 <li><code>mkdocs build</code> - Build the documentation site.</li>
 <li><code>mkdocs help</code> - Print this help message.</li>
 </ul>
+<h3 id="deploy-to-github">Deploy to github</h3>
+<p>mkdocs gh-deploy will use the gh-pages branch of repository specified in mkdocs.yml</p>
+<pre><code># this will deploy to github gh-pages specified in mkdocs.yml
+cd tiggercamera #should have mkdocs.yml file
+mkdocs build --clean
+mkdocs gh-deploy --clean 
+#site is then available at
+http://cudmore.github.io/triggercamera
+</code></pre>
 <h3 id="project-layout">Project layout</h3>
 <pre><code>mkdocs.yml    # The configuration file.
 docs/
