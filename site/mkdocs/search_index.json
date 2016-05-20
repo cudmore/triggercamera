@@ -1,0 +1,139 @@
+{
+    "docs": [
+        {
+            "location": "/", 
+            "text": "Trigger Camera\n\n\nThis is a Raspberry Pi camera that responds to digital TTL pulses to start and stop video acquisition during an experiment. During video acquisition, external events such as frame times on a scanning microscope are watermarked on the video and saved to a text file.\n\n\nThe camera can be controlled from a Python command prompt, via a web browser, or using a hardware LCD/keypad.\n\n\nOverview\n\n\nBackground on the Raspberry Pi\n\n\nThe Raspberry Pi is a low cost ($35) computer that runs Linux. In addition to USB, ethernet, and HDMI connectors, the Raspberry Pi has a dedicated camera port and low level digital input and output (DIO). Both the camera and DIO pins can be easily programmed  using Python.\n\n\nThe Raspberry Pi provides an end-to-end open source system. Both the hardware and the software is provided by \nThe Raspberry Pi Foundation\n and an active developer community. Given that all components are open-source, there are some very unique upgrades that one does not see in a commercial marketplace. The Raspberry Pi computer itself has undergone three rounds of system upgrades, increasing its processor speed by more than a factor of ten, expanding its onboard RAM, and adding onboard WIFI and Bluetooth while the price has remained fixed at $35. When it was first released, the 5MP Raspberry Pi camera could record 640x480 video at 30 frames-per-second. With a software upgrade this capability was extended to 60 and 90 frames per second and a second camera was then released increasing the sensor size from 5MP to 8MP while keeping the price fixed at $25.\n\n\nSoftware implementation\n\n\nThe software provided here will run a Raspberry Pi camera as a slave to other devices already in place for an experiment.\n\n\nOnce the camera is armed, it will continuously record a circular stream of video in memory. When a digital trigger is received, the the video will begin being saved to disk. In addition to saving the video after a trigger, the video before the trigger will also be saved. This has the distinct advantage of given you a record of what your animal was doing  before a trial was started. In many cases, 'bad trials' can be found because there was a lot of movement (or some other abberent event) before a trial began.\n\n\nParts list\n\n\nThese parts are widely available at many different online sellers including: Sparkfun, Adafruit, Element14, and Amazon.\n\n\n\n\nRaspberry Pi 2 or 3\n\n\nSD card\n\n\nPower supply\n\n\nUSB stick to save video\n\n\nVoltage level shifter\n\n\nRaspberry Pi NoIR camera\n\n\nPi camera ribbon cables (2 meters)\n\n\nIR LEDS\n\n\nCables to wire the Raspberry Pi to digital lines\n\n\nPi Camera ribbon cable to HDMI converter\n\n\n[optional] 5V relay to allow Pi to switch higher voltage power (5V or 12V) on/off\n\n\n\n\nWhile the cost of the Pi is cheap, the price adds up with all the additional pieces needed. In the end, the total cost should be $100 to $150.\n\n\nThe Raspberry Pi can only accept digital signals at 3.5V. Many devices use 5V for digital signals. Thus, a level shifter is needed to convert 5V to 3.5V. This can be easily wired by hand as a voltage divider or purchased as a premade circuit board.\n\n\nConfiguring a Raspberry Pi\n\n\nWe are not going to provide a full tutorial here and assume you have a functioning Raspberry Pi. Here is a basic to do list to get started.\n\n\n\n\nInstall Raspbian on an SD card and boot the pi\n\n\nConfigure wired network\n\n\nMake sure the camera is installed\n\n\nInstall required python libraries\n\n\nSMB to mount/share folders with Windows computers\n\n\nAFP to mount/share folders with OS X (SMB will also work with OS X)\n\n\nStartUpMailer to have the Raspberry Pi email with its IP address when it boots\n\n\n\n\nBuilding the system\n\n\nWiring the system\n\n\n\n\nConnect Camera to Raspberry Pi\n\n\nConnect digital lines to the Raspberry Pi (be sure to convert 5V lines to 3.5V)\n\n\nGround the Raspberry Pi to the digital line ground/shield\n\n\nConnect LEDs to the Raspberry Pi. If LEDs need a lot of power, hook them up with a 5V relay.\n\n\n\n\nInstalling required Python libraries\n\n\nPython interface\n\n\nRPi.GPIO\npicamera\nConfigParser\n\n\n\nWeb Interface\n\n\nflask\nflask-socketio\n\n\n\nLimitations\n\n\nThe Raspberry Pi runs Linux and like other operating systems including Microsoft Windows and Mac OS it is not real time. There will always be unpredictable delays in the detection and generation of digital pulses. If the detection of a fast pulse or the timing of a pulse is critical for an experiment it is strongly suggested to use a more precise microcontroller like an Arduino.\n\n\nSee the \nAnalysis\n section for example Python code to test the limits of this precision.\n\n\nRunning the camera\n\n\nPython command line interface\n\n\nWith \ntriggercamera.py\n, the camera can be controlled with a python command line interface. Once the camera is armed with 'ArmTrigger()' it will start and stop video recording following a TTL trigger.\n\n\nimport triggercamera\ntc=triggercamera.TriggerCamera()\ntc.ArmTrigger()\n\n\n\nAdditional interface\n\n\n#start and stop video recording as much as you like\ntc.startVideo()\ntc.stopVideo()\n\n# single images can be saved every few seconds while video is being recorded\ntc.doTimelapse=1\ntc.doTimelapse=0\n\n# todo: add interface to control two different LEDs\n\n\n\nWeb interface\n\n\ntriggercamera_app.py\n provides a web server allowing the camera to be controlled through a web browser. The web server is run using \nFlask\n and provides a REST api as a wrapper around the triggercamera.py command line engine.\n\n\nRun a web server with\n\n\npython triggercamera_app.py\n\n\n\nThe server will be available on the local IP address of the machine running the code, in this case '192.168.1.12'. The server will run on port 5010.\n\n\nThe camera can be controlled through a web browser as follows.\n\n\nhttp://192.168.1.12:5010/startarm\nhttp://192.168.1.12:5010/stoparm\nhttp://192.168.1.12:5010/startvideo\nhttp://192.168.1.12:5010/stopvideo\nhttp://192.168.1.12:5010/timelapseon\nhttp://192.168.1.12:5010/timelapseoff\nhttp://192.168.1.12:5010/lastimage\n\n\n\nto do:\n Add an actual web page with buttons to control the camera and give realtime feedback.\n\n\nLCD and keypad interface\n\n\nNOT IMPLEMENTED.\n A hardware interface is provided if an \nLCD/keypad\n is attached to the Raspberry Pi.\n\n\nUser configuration\n\n\nModify \nconfig.ini\n and restart the camera code\n\n\n[triggers]\ntriggerpin: 4\nframepin: 17\n\n[led]\nled1pin: 2\nled2pin: 3\n\n[camera]\nfps: 30\nresolution: 640,480\nbufferSeconds = 5\n\nwatchedpathon: 1\nwatchedpath: /video\n\nsavepath: /video\n\n\n\nOutput video\n\n\nTrigger camera saves video in the \nh264\n video format. This is a very efficient video codec that make very small but highly detailed videos. Before you analyze these h264 video files they need to be converted to include the frames per second. This can be done in a number of video editing programs but we suggest \nffmpeg\n because it can be scripted and incorporated into most workflows.\n\n\nto do\n Supply real ffmpeg code\n\n\nsrcDir = '/src/dir/with/video'\ndstDir = 'dst/dir/for/mp4'\nfor file in srcDir:\n    outfile = file.strip('h264') + '.mp4'\n    ffmpeg -r 25 -i file dstDir+outfile\n\n\n\nOutput files\n\n\nIn addition to saving video, Trigger Camera also saves a .txt file for each video with frame time stamps.\n\n\nHere are the first 5 frames of an output .txt file\n\n\ndate,time,seconds,frame\n20160520,074319.0,1463744599.61,1\n20160520,074319.0,1463744599.65,2\n20160520,074319.0,1463744599.68,3\n20160520,074319.0,1463744599.71,4\n20160520,074319.0,1463744599.74,5\n\n\n\nto do\n ADD A HEADER LINE WITH FPS and VIDEO WIDTH/HEIGHT PLUS OTHER PARAMETERS.\n\n\nAnalysis\n\n\nWe have provided Python code to load, analyze and plot these output .txt file. See \nan example iPython notebook\n\n\n\n\nTroubleshooting\n\n\n\n\n\n\nTest the camera with\n\n\nraspistill -o tst.jpg\n\n\n\n\n\n\nIf the camera triggering is erratic or the Raspberry is missing fast pulses, check that all digital lines going to the Raspberry Pi are grounded. It is good practice to connect the Raspberry Pi ground pins to the ground (shield) of any digital lines.\n\n\n\n\n\n\nIf the recorded video changes light-levels erratically, this is usllay due to fluctuations in the power to the Pi. Make sure the Pi has a DC power supply \n2 Amps. If additional LEDs are being powered by the Pi, consider breaking these out with their own dedicated power supplies.\n\n\n\n\n\n\nSee this to auto mount an SMB share on boot\n\n\n\n\n\n\nhttp://raspberrypi.stackexchange.com/questions/34444/cant-get-a-cifs-network-drive-to-mount-on-boot\n\n\nTo Do\n\n\n\n\nImplement a Flask homepage to provide buttons to control camera and feedback during a trial.\n\n\n\n\nAdd control and interface for two LEDs (e.g. IR and white).\n\n\n\n\n\n\ntry using easydict so i can use'.' notation in code", 
+            "title": "Home"
+        }, 
+        {
+            "location": "/#trigger-camera", 
+            "text": "This is a Raspberry Pi camera that responds to digital TTL pulses to start and stop video acquisition during an experiment. During video acquisition, external events such as frame times on a scanning microscope are watermarked on the video and saved to a text file.  The camera can be controlled from a Python command prompt, via a web browser, or using a hardware LCD/keypad.", 
+            "title": "Trigger Camera"
+        }, 
+        {
+            "location": "/#overview", 
+            "text": "", 
+            "title": "Overview"
+        }, 
+        {
+            "location": "/#background-on-the-raspberry-pi", 
+            "text": "The Raspberry Pi is a low cost ($35) computer that runs Linux. In addition to USB, ethernet, and HDMI connectors, the Raspberry Pi has a dedicated camera port and low level digital input and output (DIO). Both the camera and DIO pins can be easily programmed  using Python.  The Raspberry Pi provides an end-to-end open source system. Both the hardware and the software is provided by  The Raspberry Pi Foundation  and an active developer community. Given that all components are open-source, there are some very unique upgrades that one does not see in a commercial marketplace. The Raspberry Pi computer itself has undergone three rounds of system upgrades, increasing its processor speed by more than a factor of ten, expanding its onboard RAM, and adding onboard WIFI and Bluetooth while the price has remained fixed at $35. When it was first released, the 5MP Raspberry Pi camera could record 640x480 video at 30 frames-per-second. With a software upgrade this capability was extended to 60 and 90 frames per second and a second camera was then released increasing the sensor size from 5MP to 8MP while keeping the price fixed at $25.", 
+            "title": "Background on the Raspberry Pi"
+        }, 
+        {
+            "location": "/#software-implementation", 
+            "text": "The software provided here will run a Raspberry Pi camera as a slave to other devices already in place for an experiment.  Once the camera is armed, it will continuously record a circular stream of video in memory. When a digital trigger is received, the the video will begin being saved to disk. In addition to saving the video after a trigger, the video before the trigger will also be saved. This has the distinct advantage of given you a record of what your animal was doing  before a trial was started. In many cases, 'bad trials' can be found because there was a lot of movement (or some other abberent event) before a trial began.", 
+            "title": "Software implementation"
+        }, 
+        {
+            "location": "/#parts-list", 
+            "text": "These parts are widely available at many different online sellers including: Sparkfun, Adafruit, Element14, and Amazon.   Raspberry Pi 2 or 3  SD card  Power supply  USB stick to save video  Voltage level shifter  Raspberry Pi NoIR camera  Pi camera ribbon cables (2 meters)  IR LEDS  Cables to wire the Raspberry Pi to digital lines  Pi Camera ribbon cable to HDMI converter  [optional] 5V relay to allow Pi to switch higher voltage power (5V or 12V) on/off   While the cost of the Pi is cheap, the price adds up with all the additional pieces needed. In the end, the total cost should be $100 to $150.  The Raspberry Pi can only accept digital signals at 3.5V. Many devices use 5V for digital signals. Thus, a level shifter is needed to convert 5V to 3.5V. This can be easily wired by hand as a voltage divider or purchased as a premade circuit board.", 
+            "title": "Parts list"
+        }, 
+        {
+            "location": "/#configuring-a-raspberry-pi", 
+            "text": "We are not going to provide a full tutorial here and assume you have a functioning Raspberry Pi. Here is a basic to do list to get started.   Install Raspbian on an SD card and boot the pi  Configure wired network  Make sure the camera is installed  Install required python libraries  SMB to mount/share folders with Windows computers  AFP to mount/share folders with OS X (SMB will also work with OS X)  StartUpMailer to have the Raspberry Pi email with its IP address when it boots", 
+            "title": "Configuring a Raspberry Pi"
+        }, 
+        {
+            "location": "/#building-the-system", 
+            "text": "", 
+            "title": "Building the system"
+        }, 
+        {
+            "location": "/#wiring-the-system", 
+            "text": "Connect Camera to Raspberry Pi  Connect digital lines to the Raspberry Pi (be sure to convert 5V lines to 3.5V)  Ground the Raspberry Pi to the digital line ground/shield  Connect LEDs to the Raspberry Pi. If LEDs need a lot of power, hook them up with a 5V relay.", 
+            "title": "Wiring the system"
+        }, 
+        {
+            "location": "/#installing-required-python-libraries", 
+            "text": "", 
+            "title": "Installing required Python libraries"
+        }, 
+        {
+            "location": "/#python-interface", 
+            "text": "RPi.GPIO\npicamera\nConfigParser", 
+            "title": "Python interface"
+        }, 
+        {
+            "location": "/#web-interface", 
+            "text": "flask\nflask-socketio", 
+            "title": "Web Interface"
+        }, 
+        {
+            "location": "/#limitations", 
+            "text": "The Raspberry Pi runs Linux and like other operating systems including Microsoft Windows and Mac OS it is not real time. There will always be unpredictable delays in the detection and generation of digital pulses. If the detection of a fast pulse or the timing of a pulse is critical for an experiment it is strongly suggested to use a more precise microcontroller like an Arduino.  See the  Analysis  section for example Python code to test the limits of this precision.", 
+            "title": "Limitations"
+        }, 
+        {
+            "location": "/#running-the-camera", 
+            "text": "", 
+            "title": "Running the camera"
+        }, 
+        {
+            "location": "/#python-command-line-interface", 
+            "text": "With  triggercamera.py , the camera can be controlled with a python command line interface. Once the camera is armed with 'ArmTrigger()' it will start and stop video recording following a TTL trigger.  import triggercamera\ntc=triggercamera.TriggerCamera()\ntc.ArmTrigger()  Additional interface  #start and stop video recording as much as you like\ntc.startVideo()\ntc.stopVideo()\n\n# single images can be saved every few seconds while video is being recorded\ntc.doTimelapse=1\ntc.doTimelapse=0\n\n# todo: add interface to control two different LEDs", 
+            "title": "Python command line interface"
+        }, 
+        {
+            "location": "/#web-interface_1", 
+            "text": "triggercamera_app.py  provides a web server allowing the camera to be controlled through a web browser. The web server is run using  Flask  and provides a REST api as a wrapper around the triggercamera.py command line engine.  Run a web server with  python triggercamera_app.py  The server will be available on the local IP address of the machine running the code, in this case '192.168.1.12'. The server will run on port 5010.  The camera can be controlled through a web browser as follows.  http://192.168.1.12:5010/startarm\nhttp://192.168.1.12:5010/stoparm\nhttp://192.168.1.12:5010/startvideo\nhttp://192.168.1.12:5010/stopvideo\nhttp://192.168.1.12:5010/timelapseon\nhttp://192.168.1.12:5010/timelapseoff\nhttp://192.168.1.12:5010/lastimage  to do:  Add an actual web page with buttons to control the camera and give realtime feedback.", 
+            "title": "Web interface"
+        }, 
+        {
+            "location": "/#lcd-and-keypad-interface", 
+            "text": "NOT IMPLEMENTED.  A hardware interface is provided if an  LCD/keypad  is attached to the Raspberry Pi.", 
+            "title": "LCD and keypad interface"
+        }, 
+        {
+            "location": "/#user-configuration", 
+            "text": "Modify  config.ini  and restart the camera code  [triggers]\ntriggerpin: 4\nframepin: 17\n\n[led]\nled1pin: 2\nled2pin: 3\n\n[camera]\nfps: 30\nresolution: 640,480\nbufferSeconds = 5\n\nwatchedpathon: 1\nwatchedpath: /video\n\nsavepath: /video", 
+            "title": "User configuration"
+        }, 
+        {
+            "location": "/#output-video", 
+            "text": "Trigger camera saves video in the  h264  video format. This is a very efficient video codec that make very small but highly detailed videos. Before you analyze these h264 video files they need to be converted to include the frames per second. This can be done in a number of video editing programs but we suggest  ffmpeg  because it can be scripted and incorporated into most workflows.  to do  Supply real ffmpeg code  srcDir = '/src/dir/with/video'\ndstDir = 'dst/dir/for/mp4'\nfor file in srcDir:\n    outfile = file.strip('h264') + '.mp4'\n    ffmpeg -r 25 -i file dstDir+outfile", 
+            "title": "Output video"
+        }, 
+        {
+            "location": "/#output-files", 
+            "text": "In addition to saving video, Trigger Camera also saves a .txt file for each video with frame time stamps.  Here are the first 5 frames of an output .txt file  date,time,seconds,frame\n20160520,074319.0,1463744599.61,1\n20160520,074319.0,1463744599.65,2\n20160520,074319.0,1463744599.68,3\n20160520,074319.0,1463744599.71,4\n20160520,074319.0,1463744599.74,5  to do  ADD A HEADER LINE WITH FPS and VIDEO WIDTH/HEIGHT PLUS OTHER PARAMETERS.", 
+            "title": "Output files"
+        }, 
+        {
+            "location": "/#analysis", 
+            "text": "We have provided Python code to load, analyze and plot these output .txt file. See  an example iPython notebook", 
+            "title": "Analysis"
+        }, 
+        {
+            "location": "/#troubleshooting", 
+            "text": "Test the camera with  raspistill -o tst.jpg    If the camera triggering is erratic or the Raspberry is missing fast pulses, check that all digital lines going to the Raspberry Pi are grounded. It is good practice to connect the Raspberry Pi ground pins to the ground (shield) of any digital lines.    If the recorded video changes light-levels erratically, this is usllay due to fluctuations in the power to the Pi. Make sure the Pi has a DC power supply  2 Amps. If additional LEDs are being powered by the Pi, consider breaking these out with their own dedicated power supplies.    See this to auto mount an SMB share on boot    http://raspberrypi.stackexchange.com/questions/34444/cant-get-a-cifs-network-drive-to-mount-on-boot", 
+            "title": "Troubleshooting"
+        }, 
+        {
+            "location": "/#to-do", 
+            "text": "Implement a Flask homepage to provide buttons to control camera and feedback during a trial.   Add control and interface for two LEDs (e.g. IR and white).    try using easydict so i can use'.' notation in code", 
+            "title": "To Do"
+        }, 
+        {
+            "location": "/dev/", 
+            "text": "mkDocs\n\n\n\n\nmkdocs new [dir-name]\n - Create a new project.\n\n\nmkdocs serve\n - Start the live-reloading docs server.\n\n\nmkdocs build\n - Build the documentation site.\n\n\nmkdocs help\n - Print this help message.\n\n\n\n\nDeploy to github\n\n\nmkdocs gh-deploy will use the gh-pages branch of repository specified in mkdocs.yml\n\n\n# this will deploy to github gh-pages specified in mkdocs.yml\ncd tiggercamera #should have mkdocs.yml file\nmkdocs build --clean\nmkdocs gh-deploy --clean \n#site is then available at\nhttp://cudmore.github.io/triggercamera\n\n\n\nProject layout\n\n\nmkdocs.yml    # The configuration file.\ndocs/\n    index.md  # The documentation homepage.\n    ...       # Other markdown pages, images and other files.", 
+            "title": "Dev"
+        }, 
+        {
+            "location": "/dev/#mkdocs", 
+            "text": "mkdocs new [dir-name]  - Create a new project.  mkdocs serve  - Start the live-reloading docs server.  mkdocs build  - Build the documentation site.  mkdocs help  - Print this help message.", 
+            "title": "mkDocs"
+        }, 
+        {
+            "location": "/dev/#deploy-to-github", 
+            "text": "mkdocs gh-deploy will use the gh-pages branch of repository specified in mkdocs.yml  # this will deploy to github gh-pages specified in mkdocs.yml\ncd tiggercamera #should have mkdocs.yml file\nmkdocs build --clean\nmkdocs gh-deploy --clean \n#site is then available at\nhttp://cudmore.github.io/triggercamera", 
+            "title": "Deploy to github"
+        }, 
+        {
+            "location": "/dev/#project-layout", 
+            "text": "mkdocs.yml    # The configuration file.\ndocs/\n    index.md  # The documentation homepage.\n    ...       # Other markdown pages, images and other files.", 
+            "title": "Project layout"
+        }
+    ]
+}
