@@ -1,2 +1,22 @@
 site_name: Trigger Camera
+
+site_author: Robert H Cudmore
+
+theme: cinder
 #theme: readthedocs
+
+pages:
+- home: index.md
+- dev: dev.md
+
+include_next_prev: false
+include_search: false
+
+repo_url: http://github.com/cudmore/triggercamera
+
+copyright: "Trigger Camera was created by Robert H Cudmore and is licensed under the <a href='https://github.com/cudmore/treadmill/blob/master/LICENSE'>MIT license</a>"
+
+
+extra:
+  include_search: false
+  #collapse_toc: true
