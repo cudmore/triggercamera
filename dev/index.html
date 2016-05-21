@@ -106,7 +106,10 @@
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
     
-        <li class="first-level active"><a href="#mkdocs">mkDocs</a></li>
+        <li class="first-level active"><a href="#platformio">PlatformIO</a></li>
+        
+    
+        <li class="first-level "><a href="#mkdocs">mkDocs</a></li>
         
             <li class="second-level"><a href="#deploy-to-github">Deploy to github</a></li>
             
@@ -119,7 +122,20 @@
 </div></div>
         <div class="col-md-9" role="main">
 
+<h2 id="platformio">PlatformIO</h2>
+<pre><code>platformio run --target upload
+
+platformio run --target clean
+
+platformio serialports monitor -p /dev/ttyACM0 -b 115200 #a serial port monitor
+</code></pre>
 <h2 id="mkdocs">mkDocs</h2>
+<pre><code>pip install mkdocs
+pip install mkdocs-cinder
+
+mkdocs serve
+mkdocs serve --dev-addr=0.0.0.0:8000 # serves built site on LAN IP
+</code></pre>
 <ul>
 <li><code>mkdocs new [dir-name]</code> - Create a new project.</li>
 <li><code>mkdocs serve</code> - Start the live-reloading docs server.</li>
