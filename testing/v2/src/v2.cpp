@@ -7,7 +7,7 @@
    
  This implementation simulates ScanImage:
    (1) wait for a trigger on triggerPin
-   (2) once trigger is received, send numFrames at interval frameInterval on framePin
+   (2) once trigger is received, set trialPin high and send numFrames at interval frameInterval on framePin
    (3) use serial interface to set up parameters {numFrames, frameInterval}
    (4) start and stop a trial with serial {startTrial, stopTrial}
    (5) get state with serial getState
@@ -20,6 +20,12 @@
  stopTrial
  getState
  
+ changle log:
+ 20160521, added trial.useTwoTriggerPins to switch between Bruger style trigger (two pins) and scanimage trigger (one pin)
+     No serial interface for this, hand-modify code and re-upload to Arduino to switch between these two
+     
+     Added trial.framePinDur to control duration of pulse during frame
+     
 */
 
 #include "Arduino.h"
@@ -33,7 +39,12 @@ struct trial {
 	int numFrames;
 	int frameInterval; //ms
 	
+	int useTwoTriggerPins;
+	
+	int framePinDur;
+	
 	int triggerPin;
+	int trialPin;
 	int framePin;
 	int ledPin;
 };
@@ -52,17 +63,23 @@ void setup()
   trial.numFrames = 600;
   trial.frameInterval = 30; //ms
 
-  trial.triggerPin = 0;
+  trial.useTwoTriggerPins = true;
+  trial.framePinDur = 5; //in milliseconds, set to 0 for no duration
+  trial.triggerPin = 0; //to externally trigger the Arduino
+  trial.trialPin = 6; //set high during a trial
   trial.framePin = 4; //unified scan image pin, high during scan, low pulses for each frame
   trial.ledPin = 13;
   
   Serial.begin(115200);
 
   pinMode(trial.triggerPin, INPUT);
-  pinMode(trial.framePin, OUTPUT);
+  pinMode(trial.trialPin, OUTPUT);
   pinMode(trial.framePin, OUTPUT);
   
-  Serial.println("simulate.cpp is ready");
+  digitalWrite(trial.trialPin, LOW);
+  digitalWrite(trial.framePin, LOW);
+  
+  Serial.println("v2.cpp is ready");
   
 }
 
@@ -82,40 +99,55 @@ void serialOut(unsigned long now, String str, unsigned long val) {
 }
 
 /////////////////////////////////////////////////////////////
-void scanImageStart(unsigned long now) {
+void trialStart(unsigned long now) {
 	if (trial.isRunning == false) {
-  		digitalWrite(trial.framePin, HIGH); //
-
+  		if (trial.useTwoTriggerPins) {
+  			digitalWrite(trial.trialPin, HIGH); //
+  		} else {
+  			digitalWrite(trial.framePin, HIGH); //
+		}
+		
 		trial.isRunning = true;
 		trial.currentFrame = 0;
 		trial.trialStartMillis = millis();
-		serialOut(now, "scanimagestart", trial.currentFrame);
+		serialOut(now, "trialStart", trial.currentFrame);
 	}
 }
 /////////////////////////////////////////////////////////////
-void scanImageStop(unsigned long now) {
+void trialStop(unsigned long now) {
 	if (trial.isRunning) {
-  		digitalWrite(trial.framePin, LOW); //
-		serialOut(now, "scanImageStop", trial.currentFrame);
+  		if (trial.useTwoTriggerPins) {
+  			digitalWrite(trial.trialPin, LOW); //
+  		} else {
+  			digitalWrite(trial.framePin, LOW); //
+		}
+		serialOut(now, "trialStop", trial.currentFrame);
 		trial.isRunning = false;
 	}
 }
 /////////////////////////////////////////////////////////////
 //if running, increment to next frame and stop if necessary
-void scanImageFrame(unsigned long now) {
+void newFrame(unsigned long now) {
 	if (trial.isRunning) {
 		if (now > (trial.lastFrameMillis + trial.frameInterval)) {
 			trial.lastFrameMillis = now;
 			trial.currentFrame += 1;
   			digitalWrite(trial.ledPin, LOW); //so we can see if the code is running
 
-  			digitalWrite(trial.framePin, LOW); //so we can see if the code is running
-  			digitalWrite(trial.framePin, HIGH); //so we can see if the code is running
-
-			serialOut(now, "scanImageFrame", trial.currentFrame);
+  			if (trial.useTwoTriggerPins) {
+  				digitalWrite(trial.framePin, HIGH); //so we can see if the code is running
+  				if (trial.framePinDur > 0) delay(trial.framePinDur);
+  				digitalWrite(trial.framePin, LOW); //so we can see if the code is running
+  			} else {
+  				digitalWrite(trial.framePin, LOW); //so we can see if the code is running
+   				if (trial.framePinDur > 0) delay(trial.framePinDur);
+ 				digitalWrite(trial.framePin, HIGH); //so we can see if the code is running
+			}
+			
+			serialOut(now, "newFrame", trial.currentFrame);
 
 			if (trial.currentFrame==trial.numFrames) {
-				scanImageStop(now);
+				trialStop(now);
 			}
 		} else {
 			digitalWrite(trial.ledPin, HIGH); //so we can see if the code is running
@@ -164,10 +196,10 @@ void SerialIn(unsigned long now, String str) {
 		help(now);
 	}
 	else if (str == "startTrial") {
-		scanImageStart(now);
+		trialStart(now);
 	}
 	else if (str == "stopTrial") {
-		scanImageStop(now);
+		trialStop(now);
 	}
 	else if (str.startsWith("getState")) {
 		GetState();
@@ -195,13 +227,13 @@ String inString; //to receive serial input
 /////////////////////////////////////////////////////////////
 void loop()
 {
-  //digitalWrite(LED_BUILTIN, HIGH); //so we can see if the code is running
-  //digitalWrite(13, HIGH); //so we can see if the code is running
 
 	now = millis();
 	msIntoTrial = now - trial.trialStartMillis;
 	msIntoFrame = now - trial.lastFrameMillis;
 
+	// add code to listen to trial.triggerPin
+	
 	if (Serial.available() > 0) {
 		inString = Serial.readStringUntil('\n');
 		inString.replace("\n","");
@@ -209,12 +241,6 @@ void loop()
 		SerialIn(now, inString);
 	}
 
-
-  	scanImageFrame(now);
+  	newFrame(now);
   	
-  	//digitalWrite(trial.ledPin, LOW); //so we can see if the code is running
-	//delay(250);
-  	//digitalWrite(trial.ledPin, HIGH); //so we can see if the code is running
-	//delay(250);
-
 }

@@ -78,27 +78,31 @@ class TriggerCamera(threading.Thread):
         self.config['camera']['resolution'] = (640, 480)
         
         self.config['triggers'] = {}
-        self.config['triggers']['triggerpin'] = 1
-        self.config['triggers']['framepin'] = 2
+        self.config['triggers']['useTwoTriggerPins'] = True
+        self.config['triggers']['triggerpin'] = 27
+        self.config['triggers']['framepin'] = 17
 
         #fill in parameters from config.ini
         self.ParseConfigFile()
         
-        #self.Config.get('Person','HasEyes')
-        #self.Config.set('Person','HasEyes',True)
-        #self.Config['camera'].resolution = (640, 480)
-        #self.Config['camera'].fps = 30 # 30, 60, 90
-        
-        #self.triggerPin = 4
-        self.framePin = 17
-        GPIO.setmode(GPIO.BCM)     # set up BCM GPIO numbering  
-        #GPIO.setup(self.triggerPin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)    #
-        GPIO.setup(self.framePin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)    #
-        #GPIO.add_event_detect(self.triggerPin, GPIO.BOTH, callback=self.triggerCallback) #, bouncetime=10)
-        #GPIO.add_event_detect(self.framePin, GPIO.BOTH, callback=self.frameCallback) #, bouncetime=10)
-        GPIO.add_event_detect(self.framePin, GPIO.BOTH, callback=self.framePinCallback) #, bouncetime=10)
+        triggerpin = self.config['triggers']['triggerpin']
+        framepin = self.config['triggers']['framepin']
 
-        self.lastFrameTime = 0 # set in newScanImageFrame() and checked in main run loop for stop condition
+        GPIO.setmode(GPIO.BCM)     # set up BCM GPIO numbering  
+
+        GPIO.setup(self.config['triggers']['triggerpin'], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)    #
+        GPIO.setup(self.config['triggers']['framepin'], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)    #
+
+        if self.config['triggers']['useTwoTriggerPins']:
+            print 'two pin style triggerpin is', triggerpin
+            print 'two pin style framepin is', framepin
+            GPIO.add_event_detect(triggerpin, GPIO.BOTH, callback=self.triggerPinCallback) #, bouncetime=10)
+            GPIO.add_event_detect(framepin, GPIO.RISING, callback=self.framePinCallback) #, bouncetime=10)
+        else:
+            print 'scanimage style triggerpin is', triggerpin
+            GPIO.add_event_detect(triggerpin, GPIO.BOTH, callback=self.scanimageCallback) #, bouncetime=10)
+            
+        self.lastFrameTime = 0 # set in newFrame() and checked in main run loop for stop condition
         self.lastFrameTimeout = 1 # seconds
         
         self.scanImageFrame = 0
@@ -116,33 +120,30 @@ class TriggerCamera(threading.Thread):
     this is a really bad solution that just assumes ANY change on pin
     problem is when pulse is really fast, down on frame then reading for down will miss it and read an up
     '''
+    def scanimageCallback(self, pin):
+        pinIsUp = GPIO.input(pin)
+        timeSeconds = time.time()
+        if pinIsUp and not self.videoStarted:
+             self.startVideo()
+        elif not pinIsUp and self.videoStarted:
+             self.newFrame(timeSeconds)
+             
+    '''
+    two callbacks for two pin configuration (i) trigger and (ii) frame
+    '''
+    def triggerPinCallback(self, pin):
+        timeSeconds = time.time()
+        pinIsUp = GPIO.input(pin)
+        if pinIsUp and not self.videoStarted:
+            self.startVideo()
+        elif not pinIsUp and self.videoStarted:
+            self.stopVideo()
+            
     def framePinCallback(self, pin):
         timeSeconds = time.time()
-        if not self.videoStarted:
-            #print 'framePinCallback_up() calling startVideo()'
-            self.startVideo()
-        else:
-            #print 'framePinCallback_down() calling newScanImageFrame()'
-            self.newScanImageFrame(timeSeconds)
+        if self.videoStarted:
+            self.newFrame(timeSeconds)
             
-    '''
-    def triggerCallback(self, pin):
-        isUp = GPIO.input(self.triggerPin)
-        print 'triggerCallback() got', isUp
-        if isUp and self.isArmed and not self.videoStarted:
-            print 'triggerCallback should start'
-            self.startVideo()
-        elif not isUp and self.isArmed and self.videoStarted:
-            print 'triggerCallback should stop'
-            self.stopVideo()
-        
-    def frameCallback(self, pin):
-        isUp = GPIO.input(self.framePin)
-        print '    frameCallback', isUp
-        timestamp = self.GetTimestamp()
-        #self.newScanImageFrame(timestamp)    
-    '''
-    
     def ParseConfigFile(self):
         if self.isArmed == 1:
             print 'ParseConfigFile() not alowed while isArmed'
@@ -159,6 +160,7 @@ class TriggerCamera(threading.Thread):
         resolution = Config.get('camera','resolution').split(',')
         self.config['camera']['resolution'] = (int(resolution[0]), int(resolution[1]))		
         
+        self.config['triggers']['useTwoTriggerPins'] = int(Config.get('triggers','useTwoTriggerPins'))
         self.config['triggers']['triggerpin'] = int(Config.get('triggers','triggerpin'))
         self.config['triggers']['framepin'] = int(Config.get('triggers','framepin'))
 
@@ -250,7 +252,7 @@ class TriggerCamera(threading.Thread):
 
             print 'writing log file once'
             with open(self.logFilePath, 'a') as textfile:
-                textfile.write("seconds,frame\n")
+                textfile.write("date,time,seconds,frame\n")
             with open(self.logFilePath, 'a') as textfile:
                 for item in self.frameList:
                     textfile.write("%s\n" % item)
@@ -259,19 +261,18 @@ class TriggerCamera(threading.Thread):
             self.logFileName = ''
             self.logFilePath = ''
   
-    def newScanImageFrame(self, timeSeconds):
+    def newFrame(self, timeSeconds):
         '''
         timeSeconds: time.time()
         '''
         localtime = time.localtime(timeSeconds)
         dateStr = time.strftime('%Y%m%d',localtime)
-        timeStr = time.strftime('%H%M%S.%f', localtime)
+        timeStr = time.strftime('%H%M%S', localtime) #expand this to have fraction
         
         self.lastFrameTime = timeSeconds
         self.scanImageFrame += 1
         self.camera.annotate_text = str(self.lastFrameTime) + ' ' + str(self.scanImageFrame)
-        print timestamp, 'scanImageFrame is', self.scanImageFrame
-        #self.logfileWrite(timestamp, 'frame', self.scanImageFrame)
+        print dateStr, timeStr, 'scanImageFrame is', self.scanImageFrame
         
         listLine = dateStr + ',' + timeStr + ',' + str(self.lastFrameTime) + ',' + str(self.scanImageFrame)
         self.frameList.append(listLine)
@@ -319,6 +320,8 @@ class TriggerCamera(threading.Thread):
         
         #self.startArm()
         
+        useTwoTriggerPins = self.config['triggers']['useTwoTriggerPins']
+        
         while True:
             if self.isArmed:
                 timestamp = self.GetTimestamp()
@@ -338,10 +341,9 @@ class TriggerCamera(threading.Thread):
                 
                             stopOnTrigger = 0
                             while not stopOnTrigger and self.videoStarted and (time.time()<(self.startTime + self.recordDuration)):
-                                self.camera.wait_recording(1)
-                                #self.camera.wait_recording(0.001)
-                                #if not GPIO.input(self.framePin) and (time.time() > (self.lastFrameTime + self.lastFrameTimeout)):
-                                if (time.time() > (self.lastFrameTime + self.lastFrameTimeout)):
+                                self.camera.wait_recording(1) # seconds
+                                #this is for single trigger/frame pin in ScanImage
+                                if not useTwoTriggerPins and (time.time() > (self.lastFrameTime + self.lastFrameTimeout)):
                                     print 'run() is stopping after last frame timeout'
                                     stopOnTrigger = 1
                                 
@@ -349,12 +351,6 @@ class TriggerCamera(threading.Thread):
                             self.camera.split_recording(self.stream)
                             print '\tVideoServer received self.videoStarted==0 or past recordDuration'
                             #self.sendtoserver()
-                        
-                        #check if we received down on scanimage frame pin and if it has been some time
-                        #if time.time() > (self.lastFrameTime + self.lastFrameTimeout):
-                        #    #scanimage frame clock pin has been down awhile
-                        #    print 'run() is calling stopVideo() after last frame'
-                        #    self.stopVideo()
                         
                         #capture a foo.jpg frame every stillInterval seconds
                         thistime = time.time()
@@ -364,17 +360,12 @@ class TriggerCamera(threading.Thread):
                             print 'capturing still frame:', self.lastimage
                             self.camera.capture(self.savepath + self.lastimage, use_video_port=True)
             
-                        #self.beforefilename = ''
-                        #self.afterfilename = ''
-                        #self.beforefilepath = ''
-                        #self.afterfilepath = ''
-                        
-                        time.sleep(0.001)
+                        time.sleep(0.001) # seconds
                     except:
                         print '\tVideoServer except clause -->>ERROR'
-                print '\tVideoServer.run fell out of loop'
+                print '\tVideoServer.run() fell out of while(self.isArmed) loop'
             time.sleep(0.05)
-        print '\tVideoServer terminating [is never called]'
+        print '\tVideoServer.run() terminating [is never called]'
         
         #i should wrap this in a try: except: finally:
         if self.camera:
