@@ -6,7 +6,7 @@ This is a Raspberry Pi camera that responds to general purpose digital input-out
 
 # Files and folders
 
- - triggercamera.py
+## triggercamera.py
  
 Allows interaction through a Python command prompt.  Run with `python triggercamera.py`.
 
@@ -16,7 +16,7 @@ To arm the camera to record video on a trigger
 	tc=triggercamera.TriggerCamera()
 	tc.ArmTrigger()
 	
- - triggercamera_app.py
+## triggercamera_app.py
  
  Runs a web server to allow camera to be armed through a web browser
  
@@ -29,7 +29,7 @@ To arm the camera to record video on a trigger
 	http://192.168.1.12:5010/timelapseoff
 	http://192.168.1.12:5010/lastimage
 
- - config.ini
+## config.ini
  
  Main configuration file to control how the software behaves
  
@@ -52,11 +52,11 @@ To arm the camera to record video on a trigger
 
 	savepath: /video
 
- - Analysis
+## Analysis
  
  Example iPython/Jupyter notebook to load output .txt files and measure the performance of the camer
  
- - testing
+## testing
  
  Arduino code that will simulate hardware by setting GPIO pins for start/stop trial and frame.
  
