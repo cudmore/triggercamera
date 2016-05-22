@@ -124,7 +124,7 @@ def get_index():
 #start the app/webserver
 if __name__ == "__main__":
     try:        
-        app.run(host='0.0.0.0', port=5010, debug=True)
+        app.run(host='0.0.0.0', port=5010, use_reloader=True, debug=True)
         #socketio.run(app, host='0.0.0.0', use_reloader=True)
         #socketio.run(app, host='0.0.0.0', port=5001, use_reloader=True)
     except:

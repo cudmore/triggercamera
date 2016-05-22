@@ -106,7 +106,10 @@
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
     
-        <li class="first-level active"><a href="#mkdocs">mkDocs</a></li>
+        <li class="first-level active"><a href="#platformio">PlatformIO</a></li>
+        
+    
+        <li class="first-level "><a href="#mkdocs">mkDocs</a></li>
         
             <li class="second-level"><a href="#deploy-to-github">Deploy to github</a></li>
             
@@ -115,18 +118,60 @@
             
         
     
+        <li class="first-level "><a href="#install-raspbian">Install Raspbian</a></li>
+        
+            <li class="second-level"><a href="#download-image">Download image</a></li>
+            
+        
+            <li class="second-level"><a href="#copy-image-to-sd-card">Copy image to SD card</a></li>
+            
+        
+            <li class="second-level"><a href="#first-boot-of-the-pi">First boot of the Pi</a></li>
+            
+        
+            <li class="second-level"><a href="#login-via-ssh">Login via ssh</a></li>
+            
+        
+            <li class="second-level"><a href="#run-configuration-utility">Run configuration utility</a></li>
+            
+        
+            <li class="second-level"><a href="#update-the-system">Update the system</a></li>
+            
+        
+            <li class="second-level"><a href="#apple-file-protocol-with-open-source-netatalk">Apple File Protocol with open-source netatalk</a></li>
+            
+        
+            <li class="second-level"><a href="#make-the-pi-send-email-with-ip-on-boot">Make the Pi send email with IP on boot</a></li>
+            
+        
+    
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
-<h2 id="mkdocs">mkDocs</h2>
+<h1 id="platformio">PlatformIO</h1>
+<pre><code>sudo pip install platformio #one time install
+
+platformio run --target upload
+
+platformio run --target clean
+
+platformio serialports monitor -p /dev/ttyACM0 -b 115200 #a serial port monitor
+</code></pre>
+<h1 id="mkdocs">mkDocs</h1>
+<pre><code>pip install mkdocs
+pip install mkdocs-cinder
+
+mkdocs serve
+mkdocs serve --dev-addr=0.0.0.0:8000 # serves built site on LAN IP
+</code></pre>
 <ul>
 <li><code>mkdocs new [dir-name]</code> - Create a new project.</li>
 <li><code>mkdocs serve</code> - Start the live-reloading docs server.</li>
 <li><code>mkdocs build</code> - Build the documentation site.</li>
 <li><code>mkdocs help</code> - Print this help message.</li>
 </ul>
-<h3 id="deploy-to-github">Deploy to github</h3>
+<h2 id="deploy-to-github">Deploy to github</h2>
 <p>mkdocs gh-deploy will use the gh-pages branch of repository specified in mkdocs.yml</p>
 <pre><code># this will deploy to github gh-pages specified in mkdocs.yml
 cd tiggercamera #should have mkdocs.yml file
@@ -135,11 +180,88 @@ mkdocs gh-deploy --clean
 #site is then available at
 http://cudmore.github.io/triggercamera
 </code></pre>
-<h3 id="project-layout">Project layout</h3>
+<h2 id="project-layout">Project layout</h2>
 <pre><code>mkdocs.yml    # The configuration file.
 docs/
     index.md  # The documentation homepage.
     ...       # Other markdown pages, images and other files.
+</code></pre>
+<h1 id="install-raspbian">Install Raspbian</h1>
+<p>If you are Microsoft Windows based, have a look <a href="http://www.circuitbasics.com/raspberry-pi-basics-setup-without-monitor-keyboard-headless-mode/">here</a> for a good install guide.</p>
+<h2 id="download-image">Download image</h2>
+<p>As of May 21, 2016 the image was named <code>2016-05-10-raspbian-jessie</code>. <a href="https://www.raspberrypi.org/downloads/">Download here</a></p>
+<h2 id="copy-image-to-sd-card">Copy image to SD card</h2>
+<p>Follow an installation guide <a href="https://www.raspberrypi.org/documentation/installation/installing-images/README.md">here</a>.</p>
+<p>On Mac OS</p>
+<pre><code>#Insert SD card and format as Fat32
+diskutil list # find the /dev/disk&lt;n&gt;, mine was /dev/disk3
+diskutil unmountDisk /dev/disk3 #unmount disk
+# copy .img file to disk
+sudo dd bs=1m if=/Users/cudmore/Downloads/2016-05-10-raspbian-jessie.img of=/dev/rdisk3
+</code></pre>
+<h2 id="first-boot-of-the-pi">First boot of the Pi</h2>
+<p>Connect Pi to a router with an ethernet cable and boot</p>
+<p>Find IP address using router web interface, usually http://192.168.1.1</p>
+<h2 id="login-via-ssh">Login via ssh</h2>
+<pre><code>ssh pi@192.168.1.15
+#password is raspberry
+</code></pre>
+<h2 id="run-configuration-utility">Run configuration utility</h2>
+<pre><code>sudo raspi-config
+</code></pre>
+<ul>
+<li>1 Expand Filesystem</li>
+<li>2 Change User Password</li>
+<li>3 Boot Options<ul>
+<li>B1 Console</li>
+</ul>
+</li>
+<li>5 Internationalisation Options<ul>
+<li>I1 Change Local -&gt; en_US.UTF-8 UTF-8</li>
+<li>I2 Change Timezone -&gt; US -&gt; Eastern</li>
+<li>I4 Change Wi-fi Country -&gt; US United States</li>
+</ul>
+</li>
+<li>6 Enable Camera</li>
+<li>9 Advanced Options<ul>
+<li>A2 Hostname -&gt; [choose a name here, I chose pi3]</li>
+</ul>
+</li>
+</ul>
+<p>Selecting <code>3 Boot Options -&gt; Console</code> is important. It seems Raspbian ships with X-Windows on by default.</p>
+<h2 id="update-the-system">Update the system</h2>
+<pre><code>sudo apt-get update  #update database
+sudo apt-get upgrade #update userspace
+sudo rpi-update      #update firmware (requires reboot)
+sudo reboot          #reboot
+</code></pre>
+<h2 id="apple-file-protocol-with-open-source-netatalk">Apple File Protocol with open-source netatalk</h2>
+<p>Once netatalk is installed, the Raspberry will show up in the Mac Finder 'Shared' section</p>
+<pre><code>sudo apt-get install netatalk
+</code></pre>
+<h2 id="make-the-pi-send-email-with-ip-on-boot">Make the Pi send email with IP on boot</h2>
+<p>Create an executable python script to send en email with IP. An example <a href="https://github.com/cudmore/cudmore.github.io/blob/master/_site/downloads/startup_mailer.py">startup_mailer.py</a></p>
+<pre><code>mkdir code
+cd code
+wget https://github.com/cudmore/cudmore.github.io/raw/master/_site/downloads/startup_mailer.py
+chmod +x startup_mailer.py
+</code></pre>
+<p>Make sure the first line in the .py code is <code>#!/usr/bin/python</code>.</p>
+<pre><code>#!/usr/bin/python
+</code></pre>
+<p>Set the email parameters in startup_mail.py</p>
+<pre><code>to = 'robert.cudmore@gmail.com'
+gmail_user = 'cudmore.raspberry@gmail.com'
+gmail_password = 'ENTER_YOUR_PASSWORD_HERE'
+</code></pre>
+<p>Run crontab as root and append one line <code>@reboot (sleep 10; /home/pi/code/startup_mailer.py)</code></p>
+<pre><code>sudo crontab -e
+</code></pre>
+<p>Add this to end (sleep 5 does not work!!!!)</p>
+<pre><code>@reboot (sleep 10; /home/pi/code/startup_mailer.py)
+</code></pre>
+<p>Now, when pi boots it will send an email with it's ip. Try it with</p>
+<pre><code>sudo reboot
 </code></pre></div>
         
     </div>

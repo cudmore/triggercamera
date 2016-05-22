@@ -75,12 +75,14 @@ There are two different trigger options. These are set in the [config.ini][confi
 
 `**Important:**` The Raspberry Pi can only accept GPIO signals at 3.5V. Many devices use 5V for GPIO/TTL signals. Thus, a level shifter is needed to convert 5V to 3.5V. It is easy to make a [voltage divider][voltagedivider] by hand or to buy a pre-made [voltage level shifter][levelshifter].
 
+<IMG SRC="img/gpio-pinout-v2.png" WIDTH=700>
+
 ## Installing required Python libraries
 
 ### Python interface
 
-    RPi.GPIO
-    picamera
+    RPi.GPIO #installed by default
+    picamera #installed by default
     ConfigParser
 
 ### Web Interface
@@ -201,6 +203,11 @@ Bring up an iPython web interface
     cd /Volumes/pi60/Sites/triggercamera/analysis/
     ipython notebook
 
+Here is an analysis of the frame interval detected by the Raspberry Pi and a good example of some of the limitations. Using [/testing/v2/src/v2.cpp][testing_v2] an Arduino output a frame pulse every 31 ms.
+
+ - The Raspberry Pi can miss frames
+ - The Raspberry Pi can detect frames late
+ 
 <IMG SRC="img/analysis_v2.png">
 
 ## Analyzing video
@@ -264,3 +271,5 @@ By creating a system with a Raspberry Pi there are a large number of ways to qui
 [installraspian]: http://blog.cudmore.io/post/2015/03/21/fresh-install-raspian/
 [configurenetwork]: http://blog.cudmore.io/post/2015/12/05/raspberry-wifi/
 [mountusb]: http://blog.cudmore.io/post/2015/05/05/mounting-a-usb-drive-at-boot/
+
+[testing_v2]: https://github.com/cudmore/triggercamera/blob/master/testing/v2/src/v2.cpp
