@@ -52,11 +52,11 @@ To arm the camera to record video on a trigger
 
 	savepath: /video
 
-## Analysis
+## /Analysis/
  
  Example iPython/Jupyter notebook to load output .txt files and measure the performance of the camer
  
-## testing
+## /testing/
  
  Arduino code that will simulate hardware by setting GPIO pins for start/stop trial and frame.
  
