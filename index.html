@@ -325,10 +325,11 @@
 <li>Connect IR LEDs to the Raspberry Pi. If LEDs need a lot of power, hook them up with a 5V relay and an external 12V power supply.</li>
 </ul>
 <p><code>**Important:**</code> The Raspberry Pi can only accept GPIO signals at 3.5V. Many devices use 5V for GPIO/TTL signals. Thus, a level shifter is needed to convert 5V to 3.5V. It is easy to make a <a href="https://learn.sparkfun.com/tutorials/voltage-dividers">voltage divider</a> by hand or to buy a pre-made <a href="https://www.adafruit.com/product/757">voltage level shifter</a>.</p>
+<p><IMG SRC="img/gpio-pinout-v2.png" WIDTH=700></p>
 <h2 id="installing-required-python-libraries">Installing required Python libraries</h2>
 <h3 id="python-interface">Python interface</h3>
-<pre><code>RPi.GPIO
-picamera
+<pre><code>RPi.GPIO #installed by default
+picamera #installed by default
 ConfigParser
 </code></pre>
 <h3 id="web-interface">Web Interface</h3>
@@ -421,6 +422,11 @@ for file in srcDir:
 cd /Volumes/pi60/Sites/triggercamera/analysis/
 ipython notebook
 </code></pre>
+<p>Here is an analysis of the frame interval detected by the Raspberry Pi and a good example of some of the limitations. Using <a href="https://github.com/cudmore/triggercamera/blob/master/testing/v2/src/v2.cpp">/testing/v2/src/v2.cpp</a> an Arduino output a frame pulse every 31 ms.</p>
+<ul>
+<li>The Raspberry Pi can miss frames</li>
+<li>The Raspberry Pi can detect frames late</li>
+</ul>
 <p><IMG SRC="img/analysis_v2.png"></p>
 <h2 id="analyzing-video">Analyzing video</h2>
 <p>We will provide Python code using <a href="http://opencv.org">OpenCV</a> to load and browse video files.</p>
@@ -511,5 +517,5 @@ ipython notebook
 
 <!--
 MkDocs version : 0.15.3
-Build Date UTC : 2016-05-21 18:03:44.260087
+Build Date UTC : 2016-05-22 15:18:59.251760
 -->
