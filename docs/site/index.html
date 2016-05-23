@@ -76,6 +76,12 @@
                     </li>
                 
                 
+                
+                    <li >
+                        <a href="webhelp/">web help</a>
+                    </li>
+                
+                
                 </ul>
             
 
@@ -328,13 +334,20 @@
 <p><IMG SRC="img/gpio-pinout-v2.png" WIDTH=700></p>
 <h2 id="installing-required-python-libraries">Installing required Python libraries</h2>
 <h3 id="python-interface">Python interface</h3>
-<pre><code>RPi.GPIO #installed by default
-picamera #installed by default
+<pre><code>RPi.GPIO
+picamera
 ConfigParser
 </code></pre>
 <h3 id="web-interface">Web Interface</h3>
 <pre><code>flask
 flask-socketio
+eventlet
+
+pandas
+plotly
+</code></pre>
+<p>All these libraries except pandas can be install with <code>pip install xxx</code> where xxx is the library name. Install pandas with</p>
+<pre><code>sudo apt-get install python-pandas
 </code></pre>
 <h1 id="running-the-camera">Running the camera</h1>
 <h2 id="analog-video-output">Analog video output</h2>
@@ -517,5 +530,5 @@ ipython notebook
 
 <!--
 MkDocs version : 0.15.3
-Build Date UTC : 2016-05-22 15:18:59.251760
+Build Date UTC : 2016-05-23 11:53:33.604895
 -->
