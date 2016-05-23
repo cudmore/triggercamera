@@ -8,6 +8,7 @@ theme: cinder
 pages:
 - home: index.md
 - dev: dev.md
+- web help: webhelp.md
 
 include_next_prev: false
 include_search: false

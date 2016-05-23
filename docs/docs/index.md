@@ -81,15 +81,24 @@ There are two different trigger options. These are set in the [config.ini][confi
 
 ### Python interface
 
-    RPi.GPIO #installed by default
-    picamera #installed by default
+    RPi.GPIO
+    picamera
     ConfigParser
 
 ### Web Interface
 
     flask
     flask-socketio
+	eventlet
+	
+	pandas
+	plotly
 
+All these libraries except pandas can be install with `pip install xxx` where xxx is the library name. Install pandas with
+
+    sudo apt-get install python-pandas
+    
+	
 # Running the camera
 
 ## Analog video output

@@ -21,29 +21,67 @@ http://server/timelapseoff
 '''
 import time, datetime, platform
 import pprint #to print class members
-from flask import Flask, jsonify, send_file, redirect
+from threading import Thread
+from flask import Flask, jsonify, send_file, redirect, render_template
+from flask.ext.socketio import SocketIO, emit
+import eventlet
+#import json
 
 import triggercamera
+import triggercamera_analysis
 
-print 'starting server at:', time.strftime("%m/%d/%y"), time.strftime("%H:%M:%S")
+#see: https://github.com/miguelgrinberg/Flask-SocketIO/issues/192
+eventlet.monkey_patch()
 
-app = Flask(__name__)
+print 'triggercamera_app starting server at:', time.strftime("%m/%d/%y"), time.strftime("%H:%M:%S")
 
-print 'starting video server'
+app = Flask(__name__, template_folder='triggercamera_app/templates', static_folder='triggercamera_app/static')
+
+socketio = SocketIO(app, async_mode='eventlet')
+
+print 'instantiating triggercamera.TriggerCamera()'
 v=triggercamera.TriggerCamera()
-v.daemon = True
-v.start()
+v.ArmTrigger()
 #v.startArm()
 
+tca = triggercamera_analysis.triggercamera_analysis()
+
+namespace = ''
+
+thread = None #second thread used by background_thread()
+
+def background_thread():
+	"""Example of how to send server generated events to clients."""
+	while True:
+		time.sleep(.7)
+		response = genericresponse()		
+
+		socketio.emit('serverUpdate', response, namespace=namespace)
+		
 def genericresponse():
     dateStr = time.strftime("%m/%d/%y")
     timeStr = time.strftime("%H:%M:%S")
-    ret = dateStr + ' ' + timeStr + ' system running on: ' + platform.system() + '<BR>'
-    ret += '<BR>'
-    ret += '/help for help<BR>'
-    ret += pprint.pformat(v.__dict__).replace(',','<BR>')
-    return ret
+
+    resp = {}
+    resp['date'] = dateStr
+    resp['time'] = timeStr
+    resp['isArmed'] = v.isArmed
+    resp['videoStarted'] = v.videoStarted
+
+    resp['scanImageFrame'] = v.scanImageFrame
+    resp['logFilePath'] = v.logFilePath
     
+    resp['fps'] = v.config['camera']['fps']
+	
+    return resp
+    
+@socketio.on('plotTrialButtonID', namespace=namespace)
+def plotTrialButton(message):
+	logFilePath = v.logFilePath #message['data']
+	print 'plotTrialButton() logFilePath:', logFilePath
+	divStr = tca.plotfile(logFilePath)
+	emit('lastTrialDiv', {'plotDiv': divStr})
+
 @app.route('/startarm', methods=['GET'])
 def startArm():
     v.startArm()
@@ -115,19 +153,21 @@ def help():
 #home page
 @app.route('/', methods=['GET'])
 def get_index():
-    ret = pprint.pformat(v.__dict__)
-    ret = ret.replace(',','<BR>')
-    ret2 = '/help for help <BR><BR>'
-    ret2 += ret
-    return ret2
+    global thread
+    if thread is None:
+        print('starting background thread')
+        thread = Thread(target=background_thread)
+        thread.daemon  = True; #as a daemon the thread will stop when *this stops
+        thread.start()
+    #resp = genericresponse()
+    return render_template('index.html') #, resp=resp)
 
 #start the app/webserver
 if __name__ == "__main__":
-    try:        
-        app.run(host='0.0.0.0', port=5010, use_reloader=True, debug=True)
-        #socketio.run(app, host='0.0.0.0', use_reloader=True)
-        #socketio.run(app, host='0.0.0.0', port=5001, use_reloader=True)
+    try:
+        #app.run(host='0.0.0.0', port=5010, use_reloader=True, debug=True)
+        socketio.run(app, host='0.0.0.0', port=5010, use_reloader=False)
     except:
-        print 'EXITING AND AT LAST LINE'
+        print 'triggercamera_app EXITING AND AT LAST LINE'
         raise
 

@@ -38,6 +38,7 @@ import ftplib #to send recorded video to server
 
 class TriggerCamera(threading.Thread):
     def __init__(self):
+        print '\n\nTriggerCamera() constructor'
         threading.Thread.__init__(self)
 
         #when this script is running, it will always be armed
@@ -54,7 +55,7 @@ class TriggerCamera(threading.Thread):
         self.savename = '' # the prefix to save all files
         
         self.logFileName = None
-        self.logFilePath = None
+        self.logFilePath = '/home/pi/video/20160522/20160522_222017_si.txt'
  
         self.beforefilename = ''
         self.afterfilename = ''
@@ -109,10 +110,14 @@ class TriggerCamera(threading.Thread):
         
         #keep a list of frame,time
         self.frameList = []
+
+    	self.daemon = True
+    	print '\ttriggercamera constructor is calling start()'
+    	self.start()
         
     def ArmTrigger(self):
-    	self.daemon = True
-    	self.start()
+    	#self.daemon = True
+    	#self.start()
     	self.startArm()
     	
     '''
@@ -149,7 +154,7 @@ class TriggerCamera(threading.Thread):
             print 'ParseConfigFile() not alowed while isArmed'
             return
             
-        print 'reading config file from config.ini'
+        print '\ttriggercamera.ParseConfigFile() is reading config file from config.ini'
 
         Config = ConfigParser.ConfigParser()
         Config.read('config.ini')
@@ -250,7 +255,7 @@ class TriggerCamera(threading.Thread):
                 self.camera.annotate_text = ''
                 self.camera.annotate_background = None
 
-            print 'writing log file once'
+            print 'triggercamera.stopVideo() is writing log file:', self.logFilePath
             with open(self.logFilePath, 'a') as textfile:
                 textfile.write("date,time,seconds,frame\n")
             with open(self.logFilePath, 'a') as textfile:
@@ -258,8 +263,8 @@ class TriggerCamera(threading.Thread):
                     textfile.write("%s\n" % item)
 
             #self.logfileWrite(timestamp, 'stopVideo', None)
-            self.logFileName = ''
-            self.logFilePath = ''
+            #self.logFileName = ''
+            #self.logFilePath = ''
   
     def newFrame(self, timeSeconds):
         '''
