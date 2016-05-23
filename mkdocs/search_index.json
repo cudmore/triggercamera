@@ -217,8 +217,38 @@
         }, 
         {
             "location": "/webhelp/", 
-            "text": "This will be a help page for the web interface once it is written", 
+            "text": "Minimized\n\n\n\n\nMaximized\n\n\n\n\nInterface\n\n\nTop\n\n\nPlot\n\n\nOptions", 
             "title": "web help"
+        }, 
+        {
+            "location": "/webhelp/#minimized", 
+            "text": "", 
+            "title": "Minimized"
+        }, 
+        {
+            "location": "/webhelp/#maximized", 
+            "text": "", 
+            "title": "Maximized"
+        }, 
+        {
+            "location": "/webhelp/#interface", 
+            "text": "", 
+            "title": "Interface"
+        }, 
+        {
+            "location": "/webhelp/#top", 
+            "text": "", 
+            "title": "Top"
+        }, 
+        {
+            "location": "/webhelp/#plot", 
+            "text": "", 
+            "title": "Plot"
+        }, 
+        {
+            "location": "/webhelp/#options", 
+            "text": "", 
+            "title": "Options"
         }
     ]
 }
