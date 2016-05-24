@@ -217,12 +217,12 @@
         }, 
         {
             "location": "/webhelp/", 
-            "text": "Minimized\n\n\n\n\nMaximized\n\n\n\n\nInterface\n\n\nTop\n\n\nFeedback on the state of the Trigger Camera including if it is running or not, current frame, and current output file. The date and time are from the Raspberry Pi, when the camera is connected, the time will update.\n\n\nThe spinner-icon will animate and the 'frame' will increment when the camera has been triggered and is acquiring video.\n\n\nPlot\n\n\nPlot button to generate a plot of the last trial. This plot shows the interval between frames received and should be used to verify that frame triggering is working as expected.\n\n\nOptions\n\n\nDisplays the current camera and system configuration. This includes camera frames-per-second (fps) and image size. This also includes the GPIO pin numbers for trigger and frame. In the future, this section will be editable to change these parameters. For now, the software needs to be stopped, config.ini edited and then the software should be restarted.", 
+            "text": "Minimized\n\n\n\n\n\n\n\nThe top section of the interface provides feedback on the camera status. When a trial is running and video is being recorded, the spinner will spin and \nElapsed Time\n, \nFrame\n, \nTrial\n, and \nFile\n will update.\n\n\nUse the \nStart Arm\n and \nStop Arm\n buttons to turn the listening for a trigger on and off.\n\n\nIf LEDs are wired to the Raspberry Pi, LED1 and LED2 provide an interface to turn them on and off as well as to set their brightness levels.\n\n\nMaximized\n\n\n\n\n\n\n\nInterface\n\n\nAnalysis\n\n\nThe \nPlot Last Trial\n button will generate a plot of frame-intervals versus frame number for the last trial. This can be used to verify that frame triggering is working as expected.\n\n\nOptions\n\n\nDisplays the current camera and system configuration. This includes camera frames-per-second (fps) and image size. This also includes the GPIO pin numbers for trigger and frame.\n\n\nIn the future, this section will be editable to change these parameters. For now, the software needs to be stopped, config.ini edited and then the software should be restarted.", 
             "title": "web help"
         }, 
         {
             "location": "/webhelp/#minimized", 
-            "text": "", 
+            "text": "The top section of the interface provides feedback on the camera status. When a trial is running and video is being recorded, the spinner will spin and  Elapsed Time ,  Frame ,  Trial , and  File  will update.  Use the  Start Arm  and  Stop Arm  buttons to turn the listening for a trigger on and off.  If LEDs are wired to the Raspberry Pi, LED1 and LED2 provide an interface to turn them on and off as well as to set their brightness levels.", 
             "title": "Minimized"
         }, 
         {
@@ -236,18 +236,13 @@
             "title": "Interface"
         }, 
         {
-            "location": "/webhelp/#top", 
-            "text": "Feedback on the state of the Trigger Camera including if it is running or not, current frame, and current output file. The date and time are from the Raspberry Pi, when the camera is connected, the time will update.  The spinner-icon will animate and the 'frame' will increment when the camera has been triggered and is acquiring video.", 
-            "title": "Top"
-        }, 
-        {
-            "location": "/webhelp/#plot", 
-            "text": "Plot button to generate a plot of the last trial. This plot shows the interval between frames received and should be used to verify that frame triggering is working as expected.", 
-            "title": "Plot"
+            "location": "/webhelp/#analysis", 
+            "text": "The  Plot Last Trial  button will generate a plot of frame-intervals versus frame number for the last trial. This can be used to verify that frame triggering is working as expected.", 
+            "title": "Analysis"
         }, 
         {
             "location": "/webhelp/#options", 
-            "text": "Displays the current camera and system configuration. This includes camera frames-per-second (fps) and image size. This also includes the GPIO pin numbers for trigger and frame. In the future, this section will be editable to change these parameters. For now, the software needs to be stopped, config.ini edited and then the software should be restarted.", 
+            "text": "Displays the current camera and system configuration. This includes camera frames-per-second (fps) and image size. This also includes the GPIO pin numbers for trigger and frame.  In the future, this section will be editable to change these parameters. For now, the software needs to be stopped, config.ini edited and then the software should be restarted.", 
             "title": "Options"
         }
     ]
