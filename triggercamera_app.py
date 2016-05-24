@@ -19,7 +19,7 @@ http://server/timelapseon
 http://server/timelapseoff
 
 '''
-import time, datetime, platform
+import time, datetime, platform, math
 import pprint #to print class members
 from threading import Thread
 from flask import Flask, jsonify, send_file, redirect, render_template
@@ -41,7 +41,7 @@ socketio = SocketIO(app, async_mode='eventlet')
 
 print 'instantiating triggercamera.TriggerCamera()'
 v=triggercamera.TriggerCamera()
-v.ArmTrigger()
+#v.ArmTrigger()
 #v.startArm()
 
 tca = triggercamera_analysis.triggercamera_analysis()
@@ -55,119 +55,158 @@ def background_thread():
 	while True:
 		time.sleep(.7)
 		response = genericresponse()		
-
 		socketio.emit('serverUpdate', response, namespace=namespace)
 		
 def genericresponse():
-    dateStr = time.strftime("%m/%d/%y")
-    timeStr = time.strftime("%H:%M:%S")
+	dateStr = time.strftime("%m/%d/%y")
+	timeStr = time.strftime("%H:%M:%S")
 
-    resp = {}
-    resp['date'] = dateStr
-    resp['time'] = timeStr
-    resp['isArmed'] = v.isArmed
-    resp['videoStarted'] = v.videoStarted
+	resp = {}
+	resp['date'] = dateStr
+	resp['time'] = timeStr
+	resp['isArmed'] = v.isArmed
+	resp['videoStarted'] = v.videoStarted
+	if v.videoStarted and v.trialStartTime>0:
+		resp['elapsedTime'] = math.floor(time.time() - v.trialStartTime)
+	else:
+		resp['elapsedTime'] = ''
 
-    resp['scanImageFrame'] = v.scanImageFrame
-    resp['logFilePath'] = v.logFilePath
-    
-    resp['fps'] = v.config['camera']['fps']
+	resp['scanImageFrame'] = v.scanImageFrame
+	resp['trialNumber'] = v.trialNumber
+	resp['logFilePath'] = v.logFilePath
 	
-    return resp
-    
+	resp['led1On'] = v.led1On
+	resp['led2On'] = v.led2On
+
+	resp['fps'] = v.config['camera']['fps']
+	resp['resolution'] = v.config['camera']['resolution']
+	resp['bufferSeconds'] = v.config['camera']['bufferSeconds']
+	
+	
+	resp['useTwoTriggerPins'] = v.config['triggers']['useTwoTriggerPins']
+	resp['triggerPin'] = v.config['triggers']['triggerpin']
+	resp['framePin'] = v.config['triggers']['framepin']
+
+	return resp
+	
 @socketio.on('plotTrialButtonID', namespace=namespace)
 def plotTrialButton(message):
 	logFilePath = v.logFilePath #message['data']
-	print 'plotTrialButton() logFilePath:', logFilePath
-	divStr = tca.plotfile(logFilePath)
-	emit('lastTrialDiv', {'plotDiv': divStr})
+	if logFilePath:
+		print 'plotTrialButton() logFilePath:', logFilePath
+		divStr = tca.plotfile(logFilePath)
+		emit('lastTrialDiv', {'plotDiv': divStr})
+
+@socketio.on('startArmButtonID', namespace=namespace)
+def startArmButton(message):
+	v.startArm()
+	response = genericresponse()		
+	socketio.emit('serverUpdate', response, namespace=namespace)
+
+@socketio.on('stopArmButtonID', namespace=namespace)
+def stopArmButton(message):
+	v.stopArm()
+	response = genericresponse()		
+	socketio.emit('serverUpdate', response, namespace=namespace)
+
+@socketio.on('ledButtonID', namespace=namespace)
+def ledButton(msg):
+	led = msg['led']
+	on = msg['on']
+	print 'ledButton()', led, on
+	if led == 1:
+		v.led1On = on
+	elif led == 2:
+		v.led2On = on
+	response = genericresponse()		
+	socketio.emit('serverUpdate', response, namespace=namespace)
 
 @app.route('/startarm', methods=['GET'])
 def startArm():
-    v.startArm()
-    return genericresponse()
-    
+	v.startArm()
+	return genericresponse()
+	
 @app.route('/stoparm', methods=['GET'])
 def stopArm():
-    v.stopArm()
-    return genericresponse()
-    
+	v.stopArm()
+	return genericresponse()
+	
 @app.route('/startvideo', methods=['GET'])
 def startVideo():
-    v.startVideo()
-    return genericresponse()
-    
+	v.startVideo()
+	return genericresponse()
+	
 @app.route('/stopvideo', methods=['GET'])
 def stopVideo():
-    v.stopVideo()
-    return genericresponse()
-    
+	v.stopVideo()
+	return genericresponse()
+	
 @app.route('/timelapseon', methods=['GET'])
 def timelapseon():
-    v.doTimelapse = 1
-    return genericresponse()
-    
+	v.doTimelapse = 1
+	return genericresponse()
+	
 @app.route('/timelapseoff', methods=['GET'])
 def timelapseoff():
-    v.doTimelapse = 0
-    return genericresponse()
-    
+	v.doTimelapse = 0
+	return genericresponse()
+	
 @app.route('/system', methods=['GET'])
 def system():
-    return genericresponse()
+	return genericresponse()
 
 @app.route('/loadconfig', methods=['GET'])
 def loadconfig():
-    v.ParseConfigFile()
-    return genericresponse()
+	v.ParseConfigFile()
+	return genericresponse()
 
 #redirect lastimage to address with v.lastimage filename
 @app.route('/lastimage', methods=['GET'])
 def lastimage():
-    if v.lastimage:
-        return redirect('/lastimage/' + v.lastimage)
-    else:
-        return 'no last image' + '<BR>' + genericresponse()
+	if v.lastimage:
+		return redirect('/lastimage/' + v.lastimage)
+	else:
+		return 'no last image' + '<BR>' + genericresponse()
 
 @app.route('/lastimage/<filename>')
 def send_lastimage(filename):
-    if '..' in filename or filename.startswith('/'):
-        return 'please don\'t be nasty'
-    else:
-        return send_file(v.savepath + filename)
-        
+	if '..' in filename or filename.startswith('/'):
+		return 'please don\'t be nasty'
+	else:
+		return send_file(v.savepath + filename)
+		
 @app.route('/help', methods=['GET'])
 def help():
-    ret = 'REST Interface' + '<BR>'
-    ret += '--------------' + '<BR>'
-    ret += 'startarm' + '<BR>'
-    ret += 'stoparm' + '<BR>'
-    ret += 'startvideo' + '<BR>'
-    ret += 'stopvideo' + '<BR>'
-    ret += 'timelapseon' + '<BR>'
-    ret += 'timelapseoff' + '<BR>'
-    ret += 'lastimage' + '<BR>'
-    ret += 'loadconfig' + '<BR>'
-    return ret
+	ret = 'REST Interface' + '<BR>'
+	ret += '--------------' + '<BR>'
+	ret += 'startarm' + '<BR>'
+	ret += 'stoparm' + '<BR>'
+	ret += 'startvideo' + '<BR>'
+	ret += 'stopvideo' + '<BR>'
+	ret += 'timelapseon' + '<BR>'
+	ret += 'timelapseoff' + '<BR>'
+	ret += 'lastimage' + '<BR>'
+	ret += 'loadconfig' + '<BR>'
+	return ret
 
 #home page
 @app.route('/', methods=['GET'])
 def get_index():
-    global thread
-    if thread is None:
-        print('starting background thread')
-        thread = Thread(target=background_thread)
-        thread.daemon  = True; #as a daemon the thread will stop when *this stops
-        thread.start()
-    #resp = genericresponse()
-    return render_template('index.html') #, resp=resp)
+	global thread
+	if thread is None:
+		print('starting background thread')
+		thread = Thread(target=background_thread)
+		thread.daemon  = True; #as a daemon the thread will stop when *this stops
+		thread.start()
+	#resp = genericresponse()
+	return render_template('index.html') #, resp=resp)
 
 #start the app/webserver
 if __name__ == "__main__":
-    try:
-        #app.run(host='0.0.0.0', port=5010, use_reloader=True, debug=True)
-        socketio.run(app, host='0.0.0.0', port=5010, use_reloader=False)
-    except:
-        print 'triggercamera_app EXITING AND AT LAST LINE'
-        raise
+	try:
+		#app.run(host='0.0.0.0', port=5010, use_reloader=True, debug=True)
+		socketio.run(app, host='0.0.0.0', port=5010, use_reloader=False)
+	except:
+		print 'triggercamera_app EXITING AND AT LAST LINE'
+		raise
 

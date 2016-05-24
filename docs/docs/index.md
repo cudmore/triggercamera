@@ -115,8 +115,10 @@ With [triggercamera.py][triggercamera], the camera can be controlled with a Pyth
 
 	import triggercamera
 	tc=triggercamera.TriggerCamera()
-	tc.ArmTrigger()
-
+	tc.startArm() #arm the camer to respond to triggers
+	
+	tc.stopArm() #stop the camera from responding to trigger
+	
 Additional interface
 
 	#start and stop video recording as much as you like

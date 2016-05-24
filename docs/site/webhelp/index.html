@@ -120,10 +120,7 @@
     
         <li class="first-level "><a href="#interface">Interface</a></li>
         
-            <li class="second-level"><a href="#top">Top</a></li>
-            
-        
-            <li class="second-level"><a href="#plot">Plot</a></li>
+            <li class="second-level"><a href="#analysis">Analysis</a></li>
             
         
             <li class="second-level"><a href="#options">Options</a></li>
@@ -135,17 +132,22 @@
         <div class="col-md-9" role="main">
 
 <h1 id="minimized">Minimized</h1>
-<p><IMG SRC="../img/triggercamera-minimized.png" WIDTH=450 style="border:1px solid gray"></p>
+<p><IMG SRC="../img/triggercamera-minimized2.png" WIDTH=450 style="border:1px solid gray"></p>
+<!-- <IMG SRC="../img/triggercamera-minimized.png" WIDTH=450 style="border:1px solid gray"> -->
+
+<p>The top section of the interface provides feedback on the camera status. When a trial is running and video is being recorded, the spinner will spin and <strong>Elapsed Time</strong>, <strong>Frame</strong>, <strong>Trial</strong>, and <strong>File</strong> will update.</p>
+<p>Use the <strong><font style="color:green">Start Arm</font></strong> and <strong><font style="color:red">Stop Arm</font></strong> buttons to turn the listening for a trigger on and off.</p>
+<p>If LEDs are wired to the Raspberry Pi, LED1 and LED2 provide an interface to turn them on and off as well as to set their brightness levels.</p>
 <h1 id="maximized">Maximized</h1>
-<p><IMG SRC="../img/triggercamera-maximized.png" WIDTH=450 style="border:1px solid gray"></p>
+<p><IMG SRC="../img/triggercamera-maximized2.png" WIDTH=450 style="border:1px solid gray"></p>
+<!-- <IMG SRC="../img/triggercamera-maximized.png" WIDTH=450 style="border:1px solid gray"> -->
+
 <h1 id="interface">Interface</h1>
-<h2 id="top">Top</h2>
-<p>Feedback on the state of the Trigger Camera including if it is running or not, current frame, and current output file. The date and time are from the Raspberry Pi, when the camera is connected, the time will update.</p>
-<p>The spinner-icon will animate and the 'frame' will increment when the camera has been triggered and is acquiring video.</p>
-<h2 id="plot">Plot</h2>
-<p>Plot button to generate a plot of the last trial. This plot shows the interval between frames received and should be used to verify that frame triggering is working as expected.</p>
+<h2 id="analysis">Analysis</h2>
+<p>The <strong>Plot Last Trial</strong> button will generate a plot of frame-intervals versus frame number for the last trial. This can be used to verify that frame triggering is working as expected.</p>
 <h2 id="options">Options</h2>
-<p>Displays the current camera and system configuration. This includes camera frames-per-second (fps) and image size. This also includes the GPIO pin numbers for trigger and frame. In the future, this section will be editable to change these parameters. For now, the software needs to be stopped, config.ini edited and then the software should be restarted.</p></div>
+<p>Displays the current camera and system configuration. This includes camera frames-per-second (fps) and image size. This also includes the GPIO pin numbers for trigger and frame.</p>
+<p>In the future, this section will be editable to change these parameters. For now, the software needs to be stopped, config.ini edited and then the software should be restarted.</p></div>
         
     </div>
 

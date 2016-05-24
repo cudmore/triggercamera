@@ -19,10 +19,11 @@ class triggercamera_analysis():
 
 	def plotfile(self,filePath):
 
+		#date,time,seconds,event,frameNumber
 		df = pd.read_csv(filePath)
 		diff = np.diff(df['seconds'].astype('float'))
 		diff *= 1000 #seconds to ms
-		frames = df['frame']
+		frames = df['frameNumber']
 
 		layout = {
 			'title': '',

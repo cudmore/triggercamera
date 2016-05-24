@@ -11,6 +11,22 @@
 		margin: 0; 
 		//background-color: lightgray;
 	}
+
+	.noborder button {
+		border: none;
+		padding: 0;
+		background: none;
+	}
+
+	button:focus {outline:0;}
+
+	.btn:focus {
+	  outline: none;
+	}
+
+	.btn:focus,.btn:active {
+	   outline: none !important;
+	}
 	</style>
 
 	<script type="text/javascript" src="static/jquery-2.2.1.min.js"></script>
@@ -23,25 +39,62 @@
 
 	<link rel="stylesheet" href="static/Font-Awesome-master/css/font-awesome.min.css">
 
+	<script rel="stylesheet" src="static/bootstrap-slider.min.js"></script> 
+	<link rel="stylesheet" href="static/bootstrap-slider.min.css">
+
     <script type="text/javascript" charset="utf-8">
 		$(document).ready(function(){
 
         function setStatus(msg)
         {
 			//console.log("msg.date=" + msg.time);
+			if (msg.isArmed == 1) {
+				$('#armIsOnID').html('Arm: On');
+			} else {
+				$('#armIsOnID').html('Arm: Off');
+			}
+			
 			$('#datetimeID').html(msg.date + " " + msg.time);
 			$('#isArmedID').html("Armed: " + msg.isArmed);
 			$('#videoStartedID').html("Running: " + msg.videoStarted);
+			
+			if (msg.elapsedTime > 0) {
+				$('#elapsedTimeID').html("Elapsed Time (sec): " + msg.elapsedTime);
+			}
 
 			$('#scanImageFrameID').html("Frame: " + msg.scanImageFrame);
 			$('#logFilePathID').html("File: " + msg.logFilePath);
+			$('#trialNumberID').html("Trial: " + msg.trialNumber);
 
 			$('#fpsID').html("fps: " + msg.fps);
+			$('#resolutionID').html("Resolution: " + msg.resolution);
+			$('#bufferSecondsID').html("Pre trigger buffer (seconds): " + msg.bufferSeconds);
+
+			$('#useTwoTriggerPinsID').html("Use Two Trigger Pins: " + msg.useTwoTriggerPins);
+			$('#triggerPinID').html("Trigger Pin: " + msg.triggerPin);
+			$('#framePinID').html("Frame Pin: " + msg.framePin);
 
 			if (msg.videoStarted=='1') {
 				trialspinner(1)
 			} else {
 				trialspinner(0)
+			}
+			
+			if (msg.led1On == 1) {
+				$('#led1ID').html("LED1: On");
+			    $('#slider1').slider('enable');
+			} else {
+				$('#led1ID').html("LED1: Off");
+			    $('#slider1').slider('disable');
+			    //var x = $("#slider1").slider();
+		        //x.slider('setValue', 0);
+			}
+			if (msg.led2On == 1) {
+				$('#led2ID').html("LED2: On");
+			    $('#slider2').slider('enable');
+			} else {
+				$('#led2ID').html("LED2: Off");
+			    $('#slider2').slider('disable');
 			}
 		};
 
@@ -61,7 +114,7 @@
 				//setTimeout(function() { $('.fa').removeClass().addClass('fa fa-minus-circle') }, 1000);
 			}
 		}
-
+		
 		$('#hideshowplotID').click(function(event) {        
 			 jQuery('#plotID').toggle('show');
 		});
@@ -73,11 +126,48 @@
 		$('#plotID').hide() //plot is initially hidden
 		$('#optionsID').hide() //options is initially hidden
 
+		//
+		// button presses back to the server
+		$('#startArmButtonID').click(function(event) {        
+			filepath = '';
+			socket.emit('startArmButtonID', {data: ''});
+		});
+		$('#stopArmButtonID').click(function(event) {        
+			filepath = '';
+			socket.emit('stopArmButtonID', {data: ''});
+		});
+
+		//led1
+		$('#led1OnButtonID').click(function(event) {        
+			socket.emit('ledButtonID', {led: 1, on: 1});
+		});
+		$('#led1OffButtonID').click(function(event) {        
+			socket.emit('ledButtonID', {led: 1, on: 0});
+		});
+		//led2
+		$('#led2OnButtonID').click(function(event) {        
+			socket.emit('ledButtonID', {led: 2, on: 1});
+		});
+		$('#led2OffButtonID').click(function(event) {        
+			socket.emit('ledButtonID', {led: 2, on: 0});
+		});
+
 		$('#plotlasttrialButtonID').click(function(event) {        
 			filepath = '';
 			socket.emit('plotTrialButtonID', {data: ''});
 		});
-
+		
+		//led sliders
+		$('#slider1').slider({
+			formatter: function(value) {
+				return 'Current value: ' + value;
+			}
+		});
+		$('#slider2').slider({
+			formatter: function(value) {
+				return 'Current value: ' + value;
+			}
+		});
 
 		namespace = '';
         var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
@@ -102,7 +192,7 @@
 <body>
 <div class="page">
 
-	<div id="datetimeID" style="font-size:30px; float: right;">Not connected</div>
+	<div id="datetimeID" style="font-size:24px; float: right;">Not connected</div>
 	<!--
 	Trial
 	<div id="isArmedID">Armed:</div>
@@ -110,16 +200,57 @@
 	
 	<i id="faSpinnerID" align="right" class="fa fa-circle-o-notch fa-2x"></i>		
 	<!-- <div id="videoStartedID">Recording:</div> -->
+
+	<div id="elapsedTimeID" style="font-size:20px;">Elapsed Time (sec):</div>
 	<div id="scanImageFrameID" style="font-size:20px;">Frame:</div>
+	<div id="trialNumberID" style="font-size:20px;">Trial:</div>
 
-	<div id="logFilePathID">File:</div>
+	<span id="armIsOnID" style="font-size:20px;">Arm: Off</span>
+	&nbsp;
+	<button id="startArmButtonID" class="btn btn-success btn-md">
+	   <span class="glyphicon glyphicon-play"></span> Start Arm
+	</button>
+	&nbsp;
+	<button id="stopArmButtonID" class="btn btn-danger btn-md">
+	   <span class="glyphicon glyphicon-stop"></span> Stop Arm
+	</button>
 
-Add a 'arm on' and 'arm off' button
+	<div id="logFilePathID" style="font-size:14px;">File:</div>
+
+	<BR>
+	<span id="led1ID" style="font-size:20px;">LED1: Off</span>
+	&nbsp;
+	<button id="led1OnButtonID" class="btn btn-primary btn-md">
+		<i class="fa fa-lightbulb-o fa-1x" aria-hidden="true"></i> On
+	</button>
+	&nbsp;
+	<button id="led1OffButtonID" class="btn btn-primary btn-md">
+		Off
+	</button>
+	&nbsp;&nbsp;
+	<input id="slider1" data-slider-id='ex1Slider' type="text" data-slider-min="0" data-slider-max="255" data-slider-step="1" data-slider-tooltip="hide" data-slider-value="0"/>
 
 	<BR>
 	<BR>
-	<button id="hideshowplotID" class=" btn btn-primary btn-xs"><span class="glyphicon glyphicon-chevron-down"></span></button>Plot
-		<div id=plotID>
+	<span id="led2ID" style="font-size:20px;">LED2: Off</span>
+	&nbsp;
+	<button id="led2OnButtonID" class="btn btn-primary btn-md">
+		<i class="fa fa-lightbulb-o fa-1x" aria-hidden="true"></i> On
+	</button>
+	&nbsp;
+	<button id="led2OffButtonID" class="btn btn-primary btn-md">
+		Off
+	</button>
+	&nbsp;&nbsp;
+	<input id="slider2" data-slider-id='ex1Slider' type="text" data-slider-min="0" data-slider-max="255" data-slider-step="1" data-slider-tooltip="hide" data-slider-value="0"/>
+
+	<BR>
+	<BR>
+	<div class="noborder">
+	<button id="hideshowplotID" type="button"><span class="glyphicon glyphicon-chevron-down"></span></button> Analysis
+	</div>
+		<div id="plotID">
+			<BR>
 			<button id="plotlasttrialButtonID" class="btn btn-primary btn-sm">
 			  Plot Last Trial
 			</button>
@@ -127,26 +258,27 @@ Add a 'arm on' and 'arm off' button
 		</div>
 		
 	<BR>
-	<BR>
-	<button id="hideshowoptionsID" class=" btn btn-primary btn-xs"><span class="glyphicon glyphicon-chevron-down"></span></button>Options
-	<!-- <div id="camerastate" style="width:200px; height:200px;"> -->
-	<div id=optionsID>
-		<h3>Camera</h3>
-		<div id="optionsID">
+	<div class="noborder">
+	<button id="hideshowoptionsID" type="button"><span class="glyphicon glyphicon-chevron-down"></span></button> Options
+	</div>
+	<div id="optionsID">
+		<h4>Camera</h4>
 			<div id="fpsID">fps:</div>
-			<div id="imagesizeID">image size: 640, 480</div>
-		<h3>Pi</h3>
+			<div id="resolutionID">Resolution:</div>
+			<div id="bufferSecondsID">Pre trigger buffer (seconds):</div>
+		
+		<h4>Pi</h4>
+			<div id="useTwoTriggerPinsID">Use Two Trigger Pins:</div>
 			<div id="triggerPinID">Trigger Pin:</div>
-			<div id="framePinID">Frame Pin</div>
+			<div id="framePinID">Frame Pin:</div>
 	</div> <!-- options -->
 	
-	<!--
-	<button id="armButtonID" class="btn btn-success btn-lg">
-	  <span class="glyphicon glyphicon-play"></span> Arm
-	</button>
-	<button id="stopArmButtonID" class="btn btn-danger btn-lg">
-	  <span class="glyphicon glyphicon-stop"></span> Stop Arm
-	</button>
+	<!-- button with no border template
+	<div class="noborder">
+	    <button type="button">
+		<span class="glyphicon glyphicon-chevron-down">
+	    </button>
+	</div>
 	-->
 		
 </div>
