@@ -358,7 +358,9 @@ plotly
 <p>With <a href="https://github.com/cudmore/triggercamera/blob/master/triggercamera.py">triggercamera.py</a>, the camera can be controlled with a Python command line. Once the camera is armed with 'ArmTrigger()' it will start and stop video recording following GPIO triggers.</p>
 <pre><code>import triggercamera
 tc=triggercamera.TriggerCamera()
-tc.ArmTrigger()
+tc.startArm() #arm the camer to respond to triggers
+
+tc.stopArm() #stop the camera from responding to trigger
 </code></pre>
 <p>Additional interface</p>
 <pre><code>#start and stop video recording as much as you like
@@ -530,5 +532,5 @@ ipython notebook
 
 <!--
 MkDocs version : 0.15.3
-Build Date UTC : 2016-05-24 12:55:53.868112
+Build Date UTC : 2016-05-24 12:56:22.925554
 -->
