@@ -103,11 +103,11 @@ All these libraries except pandas can be install with `pip install xxx` where xx
 	
 # Running the camera
 
-## Analog video output
+## Live video output
 
-The primary interface for controlling the camera is through either Python or a web browser. An added feature is the real-time video can be output on the analog RCA plug on the Raspberry Pi. By connecting this RCA plug to an external video monitor (not a computer monitor), a live video feed can be viewed. Using this live video feed does not interfere with any of the Python or web browser code that interacts with the camera to trigger and save video.
+The primary interface for controlling the camera is through the Python command prompt or a web browser. An added feature is a real-time video can be viewed on an external video monitor. This is as simple as connecting the RCA plug on the Raspberry Pi to an external video monitor (not a computer monitor). Using this live video feed does not interfere with any of the Python or web browser code that interacts with the camera to trigger and save video.
 
-**to do:** The Raspberry Pi 2/3 uses a 3.5mm audio plug for both audio and composite video out. See [here](http://www.raspberrypi-spy.co.uk/2014/07/raspberry-pi-model-b-3-5mm-audiovideo-jack/).
+**NOTE:** The Raspberry Pi 2/3 uses a 3.5mm audio plug for both audio and composite video out. See [here](http://www.raspberrypi-spy.co.uk/2014/07/raspberry-pi-model-b-3-5mm-audiovideo-jack/).
 
 ## Python command line
 
