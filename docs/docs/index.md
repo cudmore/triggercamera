@@ -99,45 +99,52 @@ There are two different trigger options. These are set in the [config.ini][confi
 
 <IMG SRC="img/gpio-pinout-v2.png" WIDTH=700>
 
-## Installing required Python libraries
+## Install required software
 
-Install python development headers
+### Clone github repository
 
-    sudo apt-get install python-dev 
+    mkdir Sites
+    cd Sites
+    git clone https://github.com/cudmore/triggercamera.git
     
-Some libraries can not be installed with pip.
+### Run install script
 
+We provide a ./install.sh script to install all reuquired libraries. If this script fails, try installing manually.
+
+    cd /home/pi/Sites/triggercamera
+    chmod +x ./install.sh
+    ./install.sh
+
+### Installing required Python libraries (manual)
+
+Install libraries with apt-get
+
+    sudo apt-get install python-dev #python development headers
     sudo apt-get install python-eventlet
     sudo apt-get install python-pandas
     sudo pip install plotly
 
-The remaining libraries can be installed with pip. For example, to install ConfigParser
+The remaining libraries can be installed with pip.
 
-   pip install ConfigParser
-   
-### Python interface
+    pip install pyserial
+    pip install RPi.GPIO
+    pip install picamera
+    pip install ConfigParser
 
-    pyserial
-    RPi.GPIO
-    picamera
-    ConfigParser
+    pip install flask
+    pip install flask-socketio
 
-### Web Interface
-
-    flask
-    flask-socketio
-	eventlet
+	pip install platformio #to upload code to arduino
 	
-	pandas
-	plotly
-
 ## Arduino
 
-Arduino code is provided in [/arduino][arduino_code]. This code uses an Arduino Teensy as a 'pass through' device, receiving 5V TTL pulses and passing them along to the Raspberry Pi at 3.5V. The Arduino code will also [simulate a microscope][bSimulateScope], sending triggers for 'trial' and 'frame'.
+We strongly suggest using an Arduino [Teensy][teensy]. The Teensy is (i) fast, (ii) has lots of memory, (iii) accepts 5V GPIO and outputs 3.5V, and (iv) all GPIO pins can be assigned as low level interrupts.
+
+Arduino code is provided in [/arduino][arduino_code]. This code uses an Arduino as a 'pass through' device, receiving 5V TTL pulses and passing them along to the Raspberry Pi at 3.5V. The Arduino code will also [simulate a microscope][bSimulateScope], sending triggers for 'trial' and 'frame'.
 
 See [this blog post][platformio_blog] on installing and configuring PlatformIO and an Arduino on a Raspberry Pi.
 
-Once PlatformIO is installed and configured, upload code to an Arduino using
+Once PlatformIO is installed and configured to talk to an Arduino Teensy, upload code to an Arduino using
 
     cd /home/pi/triggercamera/arduino/bExperiment
     platformio run --target upload
@@ -353,3 +360,4 @@ By creating a system with a Raspberry Pi there are a large number of ways to qui
 [uv4l]: http://www.linux-projects.org/modules/sections/index.php?op=viewarticle&artid=14
 [uv4l_blog]: http://blog.cudmore.io/post/2016/06/05/uv4l-on-Raspberry-Pi/
 [platformio_blog]: http://blog.cudmore.io/post/2016/02/07/platformio/
+[teensy]: https://www.pjrc.com/store/teensy3.html

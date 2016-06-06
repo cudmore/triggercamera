@@ -17,5 +17,9 @@
     pip install flask
     pip install flask-socketio
 
+#to upload code to arduino
+
+	pip install platformio
+	
 #uv4l for streaming video
 #sudo apt-get -y install libav-tools 
