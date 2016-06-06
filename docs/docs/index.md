@@ -141,7 +141,9 @@ Once PlatformIO is installed and configured, upload code to an Arduino using
 
     cd /home/pi/triggercamera/arduino/bExperiment
     platformio run --target upload
-	
+
+The correct serial port needs to be specified in [config.ini][config.ini]
+
 # Running the camera
 
 ## Live video output
