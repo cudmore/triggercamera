@@ -125,7 +125,7 @@
         
             <li><a href="#wiring-the-system">Wiring the system</a></li>
         
-            <li><a href="#installing-required-python-libraries">Installing required Python libraries</a></li>
+            <li><a href="#install-required-software">Install required software</a></li>
         
             <li><a href="#arduino">Arduino</a></li>
         
@@ -136,7 +136,7 @@
         
             <li><a href="#python-command-line">Python command line</a></li>
         
-            <li><a href="#web-interface_1">Web interface</a></li>
+            <li><a href="#web-interface">Web interface</a></li>
         
             <li><a href="#streaming-video-in-the-web-interface">Streaming video in the web interface</a></li>
         
@@ -400,35 +400,41 @@ Transistor–transistor logic (TTL) and general-purpose input/output (GPIO) are 
 </ul>
 <p><code>**Important:**</code> The Raspberry Pi can only accept GPIO signals at 3.5V. Many devices use 5V for GPIO/TTL signals. Thus, a level shifter is needed to convert 5V to 3.5V. It is easy to make a <a href="https://learn.sparkfun.com/tutorials/voltage-dividers">voltage divider</a> by hand or to buy a pre-made <a href="https://www.adafruit.com/product/757">voltage level shifter</a>.</p>
 <p><IMG SRC="img/gpio-pinout-v2.png" WIDTH=700></p>
-<h2 id="installing-required-python-libraries">Installing required Python libraries</h2>
-<p>Install python development headers</p>
-<pre><code>sudo apt-get install python-dev
+<h2 id="install-required-software">Install required software</h2>
+<h3 id="clone-github-repository">Clone github repository</h3>
+<pre><code>mkdir Sites
+cd Sites
+git clone https://github.com/cudmore/triggercamera.git
 </code></pre>
-<p>Some libraries can not be installed with pip.</p>
-<pre><code>sudo apt-get install python-eventlet
+<h3 id="run-install-script">Run install script</h3>
+<p>We provide a ./install.sh script to install all reuquired libraries. If this script fails, try installing manually.</p>
+<pre><code>cd /home/pi/Sites/triggercamera
+chmod +x ./install.sh
+./install.sh
+</code></pre>
+<h3 id="installing-required-python-libraries-manual">Installing required Python libraries (manual)</h3>
+<p>Install libraries with apt-get</p>
+<pre><code>sudo apt-get install python-dev #python development headers
+sudo apt-get install python-eventlet
 sudo apt-get install python-pandas
 sudo pip install plotly
 </code></pre>
-<p>The remaining libraries can be installed with pip. For example, to install ConfigParser</p>
-<p>pip install ConfigParser</p>
-<h3 id="python-interface">Python interface</h3>
-<pre><code>pyserial
-RPi.GPIO
-picamera
-ConfigParser
-</code></pre>
-<h3 id="web-interface">Web Interface</h3>
-<pre><code>flask
-flask-socketio
-eventlet
+<p>The remaining libraries can be installed with pip.</p>
+<pre><code>pip install pyserial
+pip install RPi.GPIO
+pip install picamera
+pip install ConfigParser
 
-pandas
-plotly
+pip install flask
+pip install flask-socketio
+
+pip install platformio #to upload code to arduino
 </code></pre>
 <h2 id="arduino">Arduino</h2>
-<p>Arduino code is provided in <a href="https://github.com/cudmore/triggercamera/tree/master/arduino/bExperiment">/arduino</a>. This code uses an Arduino Teensy as a 'pass through' device, receiving 5V TTL pulses and passing them along to the Raspberry Pi at 3.5V. The Arduino code will also <a href="https://github.com/cudmore/triggercamera/blob/master/arduino/bExperiment/lib/bSimulateScope/bSimulateScope.h">simulate a microscope</a>, sending triggers for 'trial' and 'frame'.</p>
+<p>We strongly suggest using an Arduino <a href="https://www.pjrc.com/store/teensy3.html">Teensy</a>. The Teensy is (i) fast, (ii) has lots of memory, (iii) accepts 5V GPIO and outputs 3.5V, and (iv) all GPIO pins can be assigned as low level interrupts.</p>
+<p>Arduino code is provided in <a href="https://github.com/cudmore/triggercamera/tree/master/arduino/bExperiment">/arduino</a>. This code uses an Arduino as a 'pass through' device, receiving 5V TTL pulses and passing them along to the Raspberry Pi at 3.5V. The Arduino code will also <a href="https://github.com/cudmore/triggercamera/blob/master/arduino/bExperiment/lib/bSimulateScope/bSimulateScope.h">simulate a microscope</a>, sending triggers for 'trial' and 'frame'.</p>
 <p>See <a href="http://blog.cudmore.io/post/2016/02/07/platformio/">this blog post</a> on installing and configuring PlatformIO and an Arduino on a Raspberry Pi.</p>
-<p>Once PlatformIO is installed and configured, upload code to an Arduino using</p>
+<p>Once PlatformIO is installed and configured to talk to an Arduino Teensy, upload code to an Arduino using</p>
 <pre><code>cd /home/pi/triggercamera/arduino/bExperiment
 platformio run --target upload
 </code></pre>
@@ -457,7 +463,7 @@ tc.doTimelapse=0
 
 # todo: add interface to control two different LEDs
 </code></pre>
-<h2 id="web-interface_1">Web interface</h2>
+<h2 id="web-interface">Web interface</h2>
 <p><a href="https://github.com/cudmore/triggercamera/blob/master/triggercamera_app.py">triggercamera_app.py</a> provides a web server allowing the camera to be controlled through a web browser. The web server is run using <a href="http://flask.pocoo.org">Flask</a> and provides a REST api as a wrapper to interact with the triggercamera.py Python code.</p>
 <p>Run a web server with</p>
 <pre><code>python triggercamera_app.py
@@ -623,5 +629,5 @@ ipython notebook
 
 <!--
 MkDocs version : 0.15.3
-Build Date UTC : 2016-06-06 13:35:35.606974
+Build Date UTC : 2016-06-06 14:00:13.807794
 -->
