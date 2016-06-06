@@ -27,6 +27,24 @@
 	.btn:focus,.btn:active {
 	   outline: none !important;
 	}
+
+	table {
+		border-collapse: collapse;
+	    width: 100%;
+	}
+
+	table, td, th {
+		//border: 1px solid black;
+		text-align: left;
+		padding: 10px;
+	}
+	th {
+		border-bottom: 1px solid #ddd;	
+	}
+	td {
+		//height: 50px;
+		vertical-align: top;
+	}
 	</style>
 
 	<script type="text/javascript" src="static/jquery-2.2.1.min.js"></script>
@@ -50,8 +68,35 @@
 			//console.log("msg.date=" + msg.time);
 			if (msg.isArmed == 1) {
 				$('#armIsOnID').html('Arm: On');
+				$('#startStreamButtonID').prop('disabled', true);
+				$('#stopStreamButtonID').prop('disabled', true);
+				if (msg.videoStarted == 1) {
+					$('#spinnerTextID').html(' Running')
+				} else {
+					$('#spinnerTextID').html(' Waiting')
+				}
+				$('#reloadConfigButtonID').prop('disabled', true);
 			} else {
 				$('#armIsOnID').html('Arm: Off');
+				$('#startStreamButtonID').prop('disabled', false);
+				$('#stopStreamButtonID').prop('disabled', false);
+				$('#spinnerTextID').html('')
+				$('#reloadConfigButtonID').prop('disabled', false);
+			}
+
+
+			if (msg.streamIsRunning == 1) {
+				$('#videoDivID').show()
+				$('#streamIsOnID').html('Stream: On');
+				$('#hideshowvideoID').html('<span id="videoChevron" class="glyphicon glyphicon-plus"></span> Video Stream: On');
+				$('#startArmButtonID').prop('disabled', true);
+				$('#stopArmButtonID').prop('disabled', true);
+			} else {
+				$('#videoDivID').hide()
+				$('#streamIsOnID').html('Stream: Off');
+				$('#hideshowvideoID').html('<span id="videoChevron" class="glyphicon glyphicon-plus"></span> Video Stream: Off');
+				$('#startArmButtonID').prop('disabled', false);
+				$('#stopArmButtonID').prop('disabled', false);
 			}
 			
 			$('#datetimeID').html(msg.date + " " + msg.time);
@@ -62,8 +107,11 @@
 				$('#elapsedTimeID').html("Elapsed Time (sec): " + msg.elapsedTime);
 			}
 
-			$('#scanImageFrameID').html("Frame: " + msg.scanImageFrame);
-			$('#logFilePathID').html("File: " + msg.logFilePath);
+			$('#numFramesID').html("Frame: " + msg.numFrames);
+			
+			var shortFileName = msg.logFilePath.replace(/^.*[\\\/]/, '')
+			$('#logFilePathID').html("File: " + shortFileName);
+			
 			$('#trialNumberID').html("Trial: " + msg.trialNumber);
 
 			$('#fpsID').html("fps: " + msg.fps);
@@ -74,6 +122,17 @@
 			$('#triggerPinID').html("Trigger Pin: " + msg.triggerPin);
 			$('#framePinID').html("Frame Pin: " + msg.framePin);
 
+			$('#serialPortID').html("Serial Port: " + msg.serialPort);
+
+			$('#gbRemainingID').html("video drive: " + msg.gbRemaining + " of " + msg.gbSize + " GB");
+			$('#cpuTemperatureID').html("CPU Temperature: " + msg.cpuTemperature);
+
+			if (msg.simulatescope == 1) {
+				$('#simulatescopeID').addClass('checked');
+			} else {
+				$('#simulatescopeID').removeClass('checked');
+			}
+			
 			if (msg.videoStarted=='1') {
 				trialspinner(1)
 			} else {
@@ -115,19 +174,39 @@
 			}
 		}
 		
+		$('#hideshowvideoID').click(function(event) {        
+			//$('#videoChevron').toggleClass("glyphicon-chevron-down glyphicon-chevron-up");	
+			$('#videoDivID').toggle('show');
+		});
+
 		$('#hideshowplotID').click(function(event) {        
+				//try nd togglechevron
+				//$('#faSpinnerID').removeClass()
+				//$('#faSpinnerID').addClass('greencolor fa fa-circle-o-notch  fa-2x fa-spin')
+				$('#plotChevron').toggleClass("glyphicon-chevron-down glyphicon-chevron-up");
+				
 			 jQuery('#plotID').toggle('show');
 		});
 
 		$('#hideshowoptionsID').click(function(event) {        
+				$('#optionsChevron').toggleClass("glyphicon-chevron-down glyphicon-chevron-up");
 			 jQuery('#optionsID').toggle('show');
 		});
 
+		$('#hideshowsimulateID').click(function(event) {        
+				$('#simulateChevron').toggleClass("glyphicon-chevron-down glyphicon-chevron-up");
+			 jQuery('#simulateID').toggle('show');
+		});
+
+		//$('#videoDivID').hide() //plot is initially hidden
 		$('#plotID').hide() //plot is initially hidden
 		$('#optionsID').hide() //options is initially hidden
+		$('#simulateID').hide() //options is initially hidden
 
 		//
 		// button presses back to the server
+		
+		//arm
 		$('#startArmButtonID').click(function(event) {        
 			filepath = '';
 			socket.emit('startArmButtonID', {data: ''});
@@ -135,6 +214,20 @@
 		$('#stopArmButtonID').click(function(event) {        
 			filepath = '';
 			socket.emit('stopArmButtonID', {data: ''});
+		});
+
+		//stream
+		$('#startStreamButtonID').click(function(event) {        
+			socket.emit('startStreamButtonID', {data: ''});
+			//d = new Date();
+			//$("#myvideoimgID").attr("src", "http://192.168.1.60:8080/stream/video.mjpeg?"+d.getTime());
+			$("#myvideoimgID").removeAttr("src").attr("src", "http://192.168.1.60:8080/stream/video.mjpeg");
+		});
+		$('#stopStreamButtonID').click(function(event) {        
+			socket.emit('stopStreamButtonID', {data: ''});
+			//d = new Date();
+			//$("#myvideoimgID").attr("src", "http://192.168.1.60:8080/stream/video.mjpeg?"+d.getTime());
+			$("#myvideoimgID").removeAttr("src").attr("src", "http://192.168.1.60:8080/stream/video.mjpeg");
 		});
 
 		//led1
@@ -169,6 +262,28 @@
 			}
 		});
 
+		$('#reloadConfigButtonID').click(function(event) {        
+			socket.emit('reloadConfig', {data: ''});
+		});
+
+		$('#runSimulationButtonID').click(function(event) {        
+			socket.emit('runSimulationButtonID', {data: ''});
+		});
+
+
+		$('#simulateCheckboxID').click(function(event) {        
+			socket.emit('simulateCheckbox', {data: ''});
+		});
+
+$('#smallImgButtonID').click(function(event) {        
+	$('#myvideoimgID').css('width','320');
+	$('#myvideoimgID').css('height','240');
+});
+$('#bigImgButtonID').click(function(event) {        
+	$('#myvideoimgID').css('width','640');
+	$('#myvideoimgID').css('height','480');
+});
+
 		namespace = '';
         var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
         socket.on('connect', function() {
@@ -185,6 +300,12 @@
 			$('#lastTrialPlotID').html(msg.plotDiv);				
 		});
 
+		socket.on('refreshvideostream', function(msg) {
+			console.log('refreshvideostream received')
+			setStatus(msg);				
+			window.location.reload()
+		});
+
 		}); //$(document).ready(function(){
     </script>
 
@@ -192,19 +313,47 @@
 <body>
 <div class="page">
 
+	<i id="faSpinnerID" align="left" class="fa fa-circle-o-notch fa-2x"></i>	
+	<span id="spinnerTextID" style="font-size:24px;">
+	</span>
 	<div id="datetimeID" style="font-size:24px; float: right;">Not connected</div>
+	
 	<!--
 	Trial
 	<div id="isArmedID">Armed:</div>
 	-->
+
+	<!-- inline text then button
+	<span class="noborder" style="display: inline; float: right;">
+	<span id="datetimeID" style="font-size:24px;">xxx connected</span>
+	<button id="hideshowplotID" type="button"><i id="plotChevron" class="fa fa-question fa-2x" "></i></button>
+	</span>
+	-->
 	
-	<i id="faSpinnerID" align="right" class="fa fa-circle-o-notch fa-2x"></i>		
 	<!-- <div id="videoStartedID">Recording:</div> -->
 
-	<div id="elapsedTimeID" style="font-size:20px;">Elapsed Time (sec):</div>
-	<div id="scanImageFrameID" style="font-size:20px;">Frame:</div>
-	<div id="trialNumberID" style="font-size:20px;">Trial:</div>
 
+
+
+	<TABLE>
+	<TR>
+	<TD>
+	<div id="elapsedTimeID" style="font-size:20px;">Elapsed Time (sec):</div>
+	</TD>
+	<TD>
+	<div id="numFramesID" style="font-size:20px;">Frame:</div>
+	</TD>
+	<TR>
+	<TD>
+	<div id="trialNumberID" style="font-size:20px;">Trial:</div>
+	</TD>
+	<TD>
+	<div id="logFilePathID" style="font-size:14px;">File:</div>
+	</TD>
+	</TR>
+	</TABLE>
+	
+	<BR>
 	<span id="armIsOnID" style="font-size:20px;">Arm: Off</span>
 	&nbsp;
 	<button id="startArmButtonID" class="btn btn-success btn-md">
@@ -215,8 +364,37 @@
 	   <span class="glyphicon glyphicon-stop"></span> Stop Arm
 	</button>
 
-	<div id="logFilePathID" style="font-size:14px;">File:</div>
 
+	<!-- VIDEO SECTION -->
+	<BR>
+	<BR>
+	<!--
+	<div class="noborder">
+	<button id="hideshowvideoID" type="button"><span id="videoChevron" class="glyphicon glyphicon-plus"></span> Stream Video</button>
+	</div>
+	-->
+	
+	<span id="streamIsOnID" style="font-size:20px;">Stream: Off</span>
+	&nbsp;
+	<button id="startStreamButtonID" class="btn btn-success btn-md">
+	   <span class="glyphicon glyphicon-play"></span> Start Stream
+	</button>
+	&nbsp;
+	<button id="stopStreamButtonID" class="btn btn-danger btn-md">
+	   <span class="glyphicon glyphicon-stop"></span> Stop Stream
+	</button>
+	
+	<div id="videoDivID">
+	<BR>
+	<img id="myvideoimgID" src="http://192.168.1.60:8080/stream/video.mjpeg" alt="image" WIDTH="320" HEIGHT="240">
+	<div class="noborder">
+	<button id="smallImgButtonID" type="button"><span class="fa fa-expand fa-1x"></span></button>
+	<button id="bigImgButtonID" type="button"><span class="fa fa-expand fa-2x"></span></button>
+	</div>
+	</div> <!-- videoDivID -->
+
+	<!-- LED SECTION -->
+	<BR>
 	<BR>
 	<span id="led1ID" style="font-size:20px;">LED1: Off</span>
 	&nbsp;
@@ -244,10 +422,13 @@
 	&nbsp;&nbsp;
 	<input id="slider2" data-slider-id='ex1Slider' type="text" data-slider-min="0" data-slider-max="255" data-slider-step="1" data-slider-tooltip="hide" data-slider-value="0"/>
 
+	<!-- ANALYSIS SECTION -->
 	<BR>
 	<BR>
 	<div class="noborder">
-	<button id="hideshowplotID" type="button"><span class="glyphicon glyphicon-chevron-down"></span></button> Analysis
+	<button id="hideshowplotID" type="button"><span id="plotChevron" class="glyphicon glyphicon-chevron-up"></span> Analysis</button>
+	&nbsp;&nbsp;
+	<A HREF="/analysis" target="_analysis"> <i class="fa fa-line-chart fa-2x" "></i></A>
 	</div>
 		<div id="plotID">
 			<BR>
@@ -257,22 +438,58 @@
 			<div id="lastTrialPlotID"></div>
 		</div>
 		
+	<!-- OPTIONS SECTION -->
 	<BR>
 	<div class="noborder">
-	<button id="hideshowoptionsID" type="button"><span class="glyphicon glyphicon-chevron-down"></span></button> Options
+	<button id="hideshowoptionsID" type="button"><span id="optionsChevron" class="glyphicon glyphicon-chevron-up"></span> Options</button>
+	<A HREF="http://cudmore.github.io/triggercamera/webhelp" target="_help"> <i class="fa fa-question fa-2x" "></i></A>
 	</div>
 	<div id="optionsID">
-		<h4>Camera</h4>
+		<button id="reloadConfigButtonID" class="btn btn-primary btn-sm">
+		  Reload Configuration
+		</button>
+
+		<BR>
+		<TABLE>
+		<TR>
+			<TH>Camera</TH>
+			<TH>Pi System</TH>
+		</TR>
+		<TR>
+		<TD>
+			<!-- CAMERA -->
 			<div id="fpsID">fps:</div>
 			<div id="resolutionID">Resolution:</div>
 			<div id="bufferSecondsID">Pre trigger buffer (seconds):</div>
-		
-		<h4>Pi</h4>
+		</TD>
+		<TD>
+			<!-- Pi System -->
 			<div id="useTwoTriggerPinsID">Use Two Trigger Pins:</div>
 			<div id="triggerPinID">Trigger Pin:</div>
 			<div id="framePinID">Frame Pin:</div>
-	</div> <!-- options -->
-	
+			<div id="serialPortID">Serial Port:</div>
+			<div id="gbRemainingID">video drive:</div>
+			<div id="cpuTemperatureID">CPU Temperatur (deg C):</div>
+
+		</TD>
+		</TR>
+		</TABLE>
+	</div> <!-- optionsID -->
+
+	<!-- SIMULATE SECTION -->
+	<BR>
+	<div class="noborder">
+	<button id="hideshowsimulateID" type="button"><span id="simulateChevron" class="glyphicon glyphicon-chevron-up"></span> Simulate</button>
+	</div>
+	<div id="simulateID">
+		<label><input type="checkbox" id="simulateCheckboxID" value="">Simulate is on</label>
+
+		<button id="runSimulationButtonID" class="btn btn-primary btn-sm">
+		  Run Simulation
+		</button>
+
+	</div> <!-- simulateID -->
+
 	<!-- button with no border template
 	<div class="noborder">
 	    <button type="button">

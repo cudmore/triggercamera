@@ -6,7 +6,9 @@ This is a Raspberry Pi camera that responds to general purpose digital input-out
 
 # Overview
 
-## Background on the Raspberry Pi
+This Raspberry Pi camera is designed to integrate into our [Treadmill](http://cudmore.github.io/treadmill) system. The Treadmill system is advantageous if an Arduino is needed to precisely control other pieces of equipment like LEDs, motors, or valves.
+
+## The Raspberry Pi
 
 The Raspberry Pi is a low cost ($35) computer that runs Linux. In addition to USB, ethernet, and HDMI connectors, the Raspberry Pi has a dedicated camera port and GPIO ports. Both the camera and GPIO ports can be easily programmed using Python. The Raspberry Pi provides an end-to-end open source system. Both the hardware and the software is provided by [The Raspberry Pi Foundation][raspberrypi.org] and is actively maintained and extended by an active developer community.
 
@@ -14,15 +16,31 @@ The Raspberry Pi is a low cost ($35) computer that runs Linux. In addition to US
 
 The software provided here will run a Raspberry Pi camera as a slave to other devices already in place for an experiment. Once the camera is armed, it will continuously record a circular stream of video in memory. When a digital trigger is received, the the video will begin being saved to disk. In addition to saving the video after a trigger, the video before the trigger will also be saved. This has the distinct advantage of given you a record of what your animal was doing  before a trial was started. In many cases, 'bad trials' can be found because there was a lot of movement (or some other abberent event) before a trial began.
 
+## Video resolutions and FPS
+
+The Raspberry Pi camera has the following resolutions and FPS. Set the resolution and FPS in the [config.ini][config.ini] file. See the [PiCamera Python documentation][picamera_fov] for more information.
+
+|		|Resolution	|Aspect Ratio	|Framerates	|Video	|Image	|FoV		|Binning
+| ---	| -----		| -----			| ----- 	| -----	| -----	| ----- 	| ---
+|1		|1920x1080	|16:9			|1-30fps	|x	 	|		|Partial	|None
+|2		|2592x1944	|4:3			|1-15fps	|x		|x		|Full		|None
+|3		|2592x1944	|4:3			|0.1666-1fps|x		|x		|Full		|None
+|4		|1296x972	|4:3			|1-42fps	|x	 	|		|Full		|2x2
+|5		|1296x730	|16:9			|1-49fps	|x	 	|		|Full		|2x2
+|6		|640x480	|4:3			|42.1-60fps	|x	 	|		|Full		|4x4
+|7		|640x480	|4:3			|60.1-90fps	|x	 	|		|Full		|4x4
+
 ## Limitations
 
 The Raspberry Pi runs Linux and like other operating systems including Microsoft Windows and Mac OS it is not real time. There will always be unpredictable delays in the detection and generation of GPIO pulses. If the detection of a fast pulse or the timing of a pulse is critical for an experiment it is strongly suggested to use a more precise microcontroller like an Arduino.
 
 See the **Analysis** section for example Python code to test the limits of this precision.
 
+<!--
 ## TTL versus GPIO
 
 Transistor–transistor logic (TTL) and general-purpose input/output (GPIO) are both digital lines that transmit signals by pulsing between a low level (usually 0 or ground) and a high level. Although it is actually rather complicated, the main difference between TTL and GPIO is in the high-level. Most devices with TTL input/output use a 5V high level while the Raspberry Pi GPIO uses a 3.5V high level. The Raspberry Pi 3.5V GPIO are **not** 5V tolerant. If a 5V TTL is connected directly to a Raspberry Pi 3.5V GPIO, the Raspberry Pi may be burned and no longer function. To connect a 5V TTL device to a Raspberry Pi 3.5V GPIO, the voltage needs to be shifted down to 3.5V. This is easily accomplished with a pre-made [level shifter][levelshifter] or by [hand-wiring a voltage-divider][voltagedivider].
+-->
 
 # Parts list
 
@@ -46,7 +64,9 @@ One option is to buy a Raspberry Pi starter kit from [Canakit][canakit]. These k
 
 The number of IR LEDs is not critical. This will depend on how far away your subject is from the camera. Usually 4 IR LEDs is a good starting point.
 
-# Configuring a Raspberry Pi
+# Building the system
+
+## Configuring a Raspberry Pi
 
 We are not going to provide a full tutorial here and will assume a functioning Raspberry Pi. Here is a basic to do list to get started.
 
@@ -60,8 +80,6 @@ We are not going to provide a full tutorial here and will assume a functioning R
  - AFP to mount/share folders with OS X (SMB will also work with OS X)
  - StartUpMailer to have the Raspberry Pi email with its IP address when it boots
 
-# Building the system
-
 ## Choosing the triggers
 
 There are two different trigger options. These are set in the [config.ini][config.ini] file using `useTwoTriggerPins: 1`
@@ -74,7 +92,9 @@ There are two different trigger options. These are set in the [config.ini][confi
  - Connect camera to Raspberry Pi
  - Connect signal and ground of GPIO/TTL cables from other equipment to the Raspberry Pi (be sure to convert incoming 5V GPIO to 3.5V)
  - Connect IR LEDs to the Raspberry Pi. If LEDs need a lot of power, hook them up with a 5V relay and an external 12V power supply.
-
+    - See [this tutorial](http://www.raspberrypi-spy.co.uk/2012/06/control-led-using-gpio-output-pin/
+ ) to wire a 5V LED to the Raspberry Pi.
+ 
 `**Important:**` The Raspberry Pi can only accept GPIO signals at 3.5V. Many devices use 5V for GPIO/TTL signals. Thus, a level shifter is needed to convert 5V to 3.5V. It is easy to make a [voltage divider][voltagedivider] by hand or to buy a pre-made [voltage level shifter][levelshifter].
 
 <IMG SRC="img/gpio-pinout-v2.png" WIDTH=700>
@@ -83,6 +103,7 @@ There are two different trigger options. These are set in the [config.ini][confi
 
 ### Python interface
 
+    pyserial
     RPi.GPIO
     picamera
     ConfigParser
@@ -153,10 +174,11 @@ The camera can be controlled through a web browser as follows.
     http://192.168.1.12:5010/timelapseoff
     http://192.168.1.12:5010/lastimage
 
+<!--
 ## LCD and keypad interface
 
 **NOT IMPLEMENTED.** A hardware interface is provided if an [LCD/keypad][lcdkeypad] is attached to the Raspberry Pi.
-
+-->
 
 # User configuration
 
@@ -183,8 +205,16 @@ Modify [config.ini][config.ini] and restart the camera code
 
 # Output video
 
-Trigger camera saves video in the [h264][h264] video format. This is a very efficient video codec that make very small but highly detailed videos. Before these h264 video files can be analyzed, they need to be converted to include the frames per second. This can be done in a number of video editing programs. One way to do this conversion is by using the command line program [ffmpeg][ffmpeg]. Because ffmpeg can be scripted, it is easy to incorporated into most workflows.
+Video is saved in the [h264][h264] video format. This is a very efficient video codec that make very small but highly detailed videos. Before these h264 video files can be analyzed, they need to be converted to include the frames per second. This can be done in a number of video editing programs. One way to do this conversion is by using the command line program [ffmpeg][ffmpeg]. Because ffmpeg can be scripted, it is easy to incorporated into most workflows.
 
+Use avconv
+
+	sudo apt-get install libav-tools 
+	
+Convert one .h264 file
+
+	avconv -r 30 -i 20160604_181119_after.h264 -vcodec copy 20160604_181119_after.mp4
+	
     srcDir = '/src/dir/with/video'
     dstDir = 'dst/dir/for/mp4'
     for file in srcDir:
@@ -193,16 +223,18 @@ Trigger camera saves video in the [h264][h264] video format. This is a very effi
 
 # Output files
 
-In addition to saving video, Trigger Camera also saves a .txt file for each video with frame time stamps.
+Each time the camera is triggered to save video, a .txt file with frame times is also saved.
 
 Here are the first 5 frames of an output .txt file
 
-    date,time,seconds,frame
-    20160520,074319.0,1463744599.61,1
-    20160520,074319.0,1463744599.65,2
-    20160520,074319.0,1463744599.68,3
-    20160520,074319.0,1463744599.71,4
-    20160520,074319.0,1463744599.74,5
+	fps=30,width=640,height=480,numFrames=300
+	date,time,seconds,event,frameNumber
+	20160530,214450,1464659090.31,startVideo,
+	20160530,214450,1464659090.34,scanImageFrame,2
+	20160530,214450,1464659090.37,scanImageFrame,3
+	20160530,214450,1464659090.4,scanImageFrame,4
+	20160530,214450,1464659090.43,scanImageFrame,5
+	20160530,214450,1464659090.47,scanImageFrame,6
 
 # Analysis
 
@@ -216,7 +248,7 @@ Bring up an iPython web interface
     cd /Volumes/pi60/Sites/triggercamera/analysis/
     ipython notebook
 
-Here is an analysis of the frame interval detected by the Raspberry Pi and a good example of some of the limitations. Using [/testing/v2/src/v2.cpp][testing_v2] an Arduino output a frame pulse every 31 ms.
+Here is an analysis of the frame interval detected by the Raspberry Pi and a good example of some of the limitations. Using [/arduino/v2/src/v2.cpp][testing_v2] an Arduino output a frame pulse every 31 ms.
 
  - The Raspberry Pi can miss frames
  - The Raspberry Pi can detect frames late
@@ -245,17 +277,18 @@ By creating a system with a Raspberry Pi there are a large number of ways to qui
 
  - If the recorded video changes light-levels erratically, this is usllay due to fluctuations in the power to the Pi. Make sure the Pi has a DC power supply >2 Amps. If additional LEDs are being powered by the Pi, consider breaking these out with their own dedicated power supplies.
 
- - See this to auto mount an SMB share on boot
+ - See [this](http://raspberrypi.stackexchange.com/questions/34444/cant-get-a-cifs-network-drive-to-mount-on-boot) to auto mount an SMB share on boot
 
-   http://raspberrypi.stackexchange.com/questions/34444/cant-get-a-cifs-network-drive-to-mount-on-boot
+   
 
 ## To Do
- - Implement a Flask homepage to provide buttons to control camera and feedback during a trial.
- - Add control and interface for two LEDs (e.g. IR and white).
- - Add a header to output files #fps=xxx;width=xxx;height=xxx
+ - **Done:** Implement a Flask homepage to provide buttons to control camera and feedback during a trial.
+ - **Done:** Add control and interface for two LEDs (e.g. IR and white).
+ - **Done:** Add a header to output files #fps=xxx;width=xxx;height=xxx
  - Write a Python script to batch process a folder of .h264 into .mp4 (with fps)
- - try using easydict so i can use'.' notation in code
+ - **Will not do this:** try using easydict so i can use'.' notation in code
  - Add a physical emergency 'stop' button
+ 
  
 [raspberrypi.org]: https://www.raspberrypi.org
 [piicamera]: http://picamera.readthedocs.io/en/release-1.10/
@@ -285,4 +318,6 @@ By creating a system with a Raspberry Pi there are a large number of ways to qui
 [configurenetwork]: http://blog.cudmore.io/post/2015/12/05/raspberry-wifi/
 [mountusb]: http://blog.cudmore.io/post/2015/05/05/mounting-a-usb-drive-at-boot/
 
-[testing_v2]: https://github.com/cudmore/triggercamera/blob/master/testing/v2/src/v2.cpp
+[testing_v2]: https://github.com/cudmore/triggercamera/blob/master/arduino/v2/src/v2.cpp
+
+[picamera_fov]: http://picamera.readthedocs.io/en/release-1.10/fov.html

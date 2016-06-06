@@ -19,21 +19,27 @@ http://server/timelapseon
 http://server/timelapseoff
 
 '''
+
+print 'triggercamera_app starting import of libraries'
+
 import time, datetime, platform, math
-import pprint #to print class members
+#import pprint #to print class members
 from threading import Thread
 from flask import Flask, jsonify, send_file, redirect, render_template
 from flask.ext.socketio import SocketIO, emit
 import eventlet
 #import json
 
+print 'triggercamera_app import triggercamera and triggercamera_analysis'
+
 import triggercamera
 import triggercamera_analysis
 
 #see: https://github.com/miguelgrinberg/Flask-SocketIO/issues/192
+print 'triggercamera_app calling eventlet.monkey_patch()'
 eventlet.monkey_patch()
 
-print 'triggercamera_app starting server at:', time.strftime("%m/%d/%y"), time.strftime("%H:%M:%S")
+print 'triggercamera_app starting Flask server at:', time.strftime("%m/%d/%y"), time.strftime("%H:%M:%S")
 
 app = Flask(__name__, template_folder='triggercamera_app/templates', static_folder='triggercamera_app/static')
 
@@ -65,13 +71,15 @@ def genericresponse():
 	resp['date'] = dateStr
 	resp['time'] = timeStr
 	resp['isArmed'] = v.isArmed
+	resp['streamIsRunning'] = v.streamIsRunning
+	
 	resp['videoStarted'] = v.videoStarted
 	if v.videoStarted and v.trialStartTime>0:
 		resp['elapsedTime'] = math.floor(time.time() - v.trialStartTime)
 	else:
 		resp['elapsedTime'] = ''
 
-	resp['scanImageFrame'] = v.scanImageFrame
+	resp['numFrames'] = v.numFrames
 	resp['trialNumber'] = v.trialNumber
 	resp['logFilePath'] = v.logFilePath
 	
@@ -87,6 +95,15 @@ def genericresponse():
 	resp['triggerPin'] = v.config['triggers']['triggerpin']
 	resp['framePin'] = v.config['triggers']['framepin']
 
+	resp['serialPort'] = v.config['serialPort']
+
+	resp['gbSize'] = v.gbSize
+	resp['gbRemaining'] = v.gbRemaining
+
+	resp['cpuTemperature'] = v.cpuTemperature
+	
+	resp['simulatescope'] = v.config['simulatescope']['on']
+	
 	return resp
 	
 @socketio.on('plotTrialButtonID', namespace=namespace)
@@ -94,8 +111,16 @@ def plotTrialButton(message):
 	logFilePath = v.logFilePath #message['data']
 	if logFilePath:
 		print 'plotTrialButton() logFilePath:', logFilePath
-		divStr = tca.plotfile(logFilePath)
+		divStr = tca.plotfile(logFilePath,'div')
 		emit('lastTrialDiv', {'plotDiv': divStr})
+
+@socketio.on('plotAnalysisTrialButtonID', namespace=namespace)
+def plotAnalysisTrialButtonID(message):
+	filePath = message['data']
+	print 'plotTrialButton2() filename:' + filePath
+	divStr = tca.plotfile(filePath,'div', divWidth=600, divHeight=300)
+	emit('plotTrialDiv', {'plotDiv': divStr})
+
 
 @socketio.on('startArmButtonID', namespace=namespace)
 def startArmButton(message):
@@ -109,6 +134,20 @@ def stopArmButton(message):
 	response = genericresponse()		
 	socketio.emit('serverUpdate', response, namespace=namespace)
 
+@socketio.on('startStreamButtonID', namespace=namespace)
+def startStreamButton(message):
+	v.startVideoStream()
+	response = genericresponse()		
+	#socketio.emit('serverUpdate', response, namespace=namespace)
+	socketio.emit('refreshvideostream', response, namespace=namespace)
+
+@socketio.on('stopStreamButtonID', namespace=namespace)
+def stopStreamButton(message):
+	v.stopVideoStream()
+	response = genericresponse()		
+	socketio.emit('serverUpdate', response, namespace=namespace)
+	#socketio.emit('refreshvideostream', response, namespace=namespace)
+
 @socketio.on('ledButtonID', namespace=namespace)
 def ledButton(msg):
 	led = msg['led']
@@ -121,6 +160,21 @@ def ledButton(msg):
 	response = genericresponse()		
 	socketio.emit('serverUpdate', response, namespace=namespace)
 
+@socketio.on('runSimulationButtonID', namespace=namespace)
+def runSimulationButton(msg):
+	v.sendSerial('start')
+	
+@socketio.on('reloadConfig', namespace=namespace)
+def reloadConfig(msg):
+	v.ParseConfigFile()
+
+@socketio.on('simulateCheckbox', namespace=namespace)
+def simulateCheckbox(msg):
+	isOn = v.config['simulatescope']['on']
+	isOn = not isOn
+	v.config['simulatescope']['on'] = isOn
+	print 'simulateCheckbox=', isOn
+	
 @app.route('/startarm', methods=['GET'])
 def startArm():
 	v.startArm()
@@ -130,7 +184,7 @@ def startArm():
 def stopArm():
 	v.stopArm()
 	return genericresponse()
-	
+
 @app.route('/startvideo', methods=['GET'])
 def startVideo():
 	v.startVideo()
@@ -190,11 +244,16 @@ def help():
 	return ret
 
 #home page
+@app.route('/analysis', methods=['GET'])
+def analysis():
+	tca.builddb('')
+	return render_template('analysis.html') #, resp=resp)
+
 @app.route('/', methods=['GET'])
 def get_index():
 	global thread
 	if thread is None:
-		print('starting background thread')
+		print('triggercamera_app:route / is starting background thread')
 		thread = Thread(target=background_thread)
 		thread.daemon  = True; #as a daemon the thread will stop when *this stops
 		thread.start()
@@ -204,6 +263,7 @@ def get_index():
 #start the app/webserver
 if __name__ == "__main__":
 	try:
+		print 'triggercamera_app::__main__'
 		#app.run(host='0.0.0.0', port=5010, use_reloader=True, debug=True)
 		socketio.run(app, host='0.0.0.0', port=5010, use_reloader=False)
 	except:

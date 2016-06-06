@@ -25,12 +25,18 @@ v.doTimelapse=0
 v.stopArm()
 '''
 
+#todo: watch a folder and (based on option), put last/new file in save .txt header
+#todo: add in serial communication with an arduino
+#todo: add option to arm on startup (add to config.ini)
+
 import os, time, io, math, threading
 import numpy as np
 from datetime import datetime #to get fractional seconds
 import picamera
 import RPi.GPIO as GPIO
 import ConfigParser # to load config.ini
+import serial
+import subprocess
 #import ftplib #to send recorded video to server
 
 class TriggerCamera(threading.Thread):
@@ -40,6 +46,7 @@ class TriggerCamera(threading.Thread):
 
 		#when this script is running, it will always be armed
 		self.isArmed = 0
+		self.streamIsRunning = 0
 		self.videoStarted = 0
 
 		self.stream = None
@@ -69,6 +76,16 @@ class TriggerCamera(threading.Thread):
 		self.stillinterval = 5 #second
 		self.lastimage = ''
 		
+		self.serial = None #serial.Serial('/dev/ttyACM0')  # open serial port
+	
+		#keep track of remaining/size of video drive
+		self.gbSize = ''
+		self.gbRemaining = ''
+		self.drivespaceremaining()
+		
+		#keep track of CPU temperature
+		self.cpuTemperature = ''
+		
 		#set up local parameter
 		self.config = {}
 		self.config['camera'] = {}
@@ -84,6 +101,9 @@ class TriggerCamera(threading.Thread):
 		self.config['ledpin1'] = 9
 		self.config['ledpin2'] = 10
 
+		self.config['simulatescope'] = {}
+		self.config['simulatescope']['on'] = 0
+		
 		#fill in parameters from config.ini
 		self.ParseConfigFile()
 		
@@ -112,22 +132,35 @@ class TriggerCamera(threading.Thread):
 		self.lastFrameTime = 0 # set in newFrame() and checked in main run loop for stop condition
 		self.lastFrameTimeout = 1 # seconds
 		
-		self.scanImageFrame = 0
+		self.numFrames = 0
+		self.ardFrames = 0
 		
 		#keep a list of frame,time
 		self.frameList = []
 
-		print '\ttrigger camera constructor initializing camera'
-		self.camera = picamera.PiCamera()
-		self.camera.resolution = (640, 480)
-		self.camera.led = 0
-		self.camera.framerate = self.config['camera']['fps']
-		self.camera.start_preview()
+		#print '\ttrigger camera constructor initializing camera'
+		#self.camera = picamera.PiCamera()
+		#self.camera.resolution = (self.config['camera']['resolution'][0], self.config['camera']['resolution'][1])
+		#self.camera.led = 0
+		#self.camera.framerate = self.config['camera']['fps']
+		#self.camera.start_preview()
 
 		self.daemon = True
 		print '\ttriggercamera constructor is calling start()'
 		self.start()
 		
+	def sendSerial(self, str):
+		serialPort = self.config['serialPort']
+		print 'triggerCamera::sendSerial()', 'serialPort=', serialPort
+		try:
+			#self.serial = serial.Serial(serialPort, baudrate=115200)
+			self.serial = serial.Serial(serialPort, baudrate=9600)
+			print('\topened port' + self.serial.name)
+			self.serial.write(str)
+			self.serial.close()
+		except:
+			print 'ERROR: triggercamera:sendSerial()'
+			
 	'''
 	one callback for complex scanimage frame clock
 	this is a really bad solution that just assumes ANY change on pin
@@ -181,6 +214,8 @@ class TriggerCamera(threading.Thread):
 		self.config['ledpin1'] = int(Config.get('led','ledpin1'))
 		self.config['ledpin2'] = int(Config.get('led','ledpin2'))
 
+		self.config['serialPort'] = Config.get('system', 'serialPort')
+
 		print '\tdone reading config file'
 			
 	'''
@@ -202,9 +237,20 @@ class TriggerCamera(threading.Thread):
 			
 	def startArm(self):
 		print '\tVideoThread startArm()'
+		if self.streamIsRunning:
+			print 'ERROR: Can not start arm while stream is running'
+			return 0
+			
 		if self.isArmed == 0:
 			try:
-				print '\tVideoServer.startArm() starting circular stream'
+				print '\ttriggercamera::startArm()   initializing camera'
+				self.camera = picamera.PiCamera()
+				self.camera.resolution = (self.config['camera']['resolution'][0], self.config['camera']['resolution'][1])
+				self.camera.led = 0
+				self.camera.framerate = self.config['camera']['fps']
+				self.camera.start_preview()
+
+				print '\ttriggercamera::startArm() starting circular stream'
 				self.stream = picamera.PiCameraCircularIO(self.camera, seconds=self.config['camera']['bufferSeconds'])
 				self.camera.start_recording(self.stream, format='h264')
 
@@ -220,8 +266,28 @@ class TriggerCamera(threading.Thread):
 		if self.isArmed == 1:
 			self.isArmed = 0
 			self.camera.stop_recording()	
+			
+			self.camera.close()
+			
 			print '\tVideoServer stopArm() is done'
 
+	def startVideoStream(self):
+		print 'triggercamera::startVideoStream()'
+		if self.isArmed:
+			print "ERROR: Can not start stream while armed"
+		elif not self.streamIsRunning:
+			cmd = '/home/pi/Sites/triggercamera/stream_start.sh'
+			subprocess.Popen(cmd, shell=True, executable='/bin/bash')
+			self.streamIsRunning = 1
+		
+	def stopVideoStream(self):
+		#subprocess.check_output(['ls', '-l'])
+		print 'triggercamera::stopVideoStream()'
+		if self.streamIsRunning:
+			cmd = '/home/pi/Sites/triggercamera/stream_stop.sh'
+			subprocess.Popen(cmd, shell=True, executable='/bin/bash')
+			self.streamIsRunning = 0
+		
 	def startVideo(self):
 		'''
 		todo: add parameter for recordDuration
@@ -231,7 +297,7 @@ class TriggerCamera(threading.Thread):
 			self.savename = self.GetTimestamp()
 			self.trialNumber += 1
 			self.trialStartTime = timeSeconds
-			self.scanImageFrame = 0
+			self.numFrames = 0
 			self.videoStarted = 1
 			if self.camera:
 				self.camera.annotate_text = 'S'
@@ -242,20 +308,70 @@ class TriggerCamera(threading.Thread):
 			
 			self.frameList = []
 			self.newOutputLine(timeSeconds, 'startVideo', None)
-			print timeSeconds, 'startVideo()'
+			print timeSeconds, 'bExperiment::startVideo()'
 
 	def stopVideo(self):
 		timeSeconds = time.time()
 		if self.isArmed and self.videoStarted:
 			self.videoStarted = 0
-			if self.camera:
-				self.camera.annotate_text = ''
-				self.camera.annotate_background = None
+			#if self.camera:
+			#	self.camera.annotate_text = ''
+			#	self.camera.annotate_background = None
 
 			self.newOutputLine(timeSeconds, 'stopVideo', None)
 			self.saveOutputFile()
-			print timeSeconds, 'stopVideo()'
 			
+			self.saveArduinoOutput()
+
+			self.drivespaceremaining() #calculate drive space remaining
+			#print timeSeconds, 'bExperiment::stopVideo()'
+			
+	def saveArduinoOutput(self):
+		'''
+		see: http://stackoverflow.com/questions/676172/full-examples-of-using-pyserial-package
+		'''
+		
+		print '*** triggerCamera::saveArduinoOutput() is reading from serial'
+		serialPort = self.config['serialPort']
+		outFile = []
+		try:
+			#ser = serial.Serial(serialPort, baudrate=115200) #, timeout=0.5)
+			ser = serial.Serial(serialPort, baudrate=9600) #, timeout=0.5)
+			ser.writeTimeout = 2
+			ser.timeout = 1
+
+			ser.flushInput()
+			ser.flushOutput()
+			
+			ser.write(b'trial')	
+			
+			time.sleep(0.5)
+			
+			serialIn = []
+			while True:
+				response = ser.readline()
+				#print 'response=', response
+				if response:
+					serialIn.append(response.rstrip())
+				else:
+					break
+		
+			ser.close()
+
+		except:
+			print '\tERROR: triggerCamera::saveArduinoOutput()'
+			
+		print '*** triggerCamera::saveArduinoOutput() is appending to file:', self.logFilePath
+		dummyStr = ',,'
+		self.ardFrames = 0
+		with open(self.logFilePath, 'a') as textfile:
+			for item in serialIn:
+				textfile.write("%s%s\n" % (dummyStr, item))
+				if item.find('ardFrame') >= 0:
+					self.ardFrames += 1
+		self.ardFrames -= 2 # 2 lines are start/stop
+		print '*** triggerCamera::saveArduinoOutput() done.', 'arduino frames = ', self.ardFrames
+		
 	def newOutputLine(self, timeSeconds, eventName, frameNumber):
 		localtime = time.localtime(timeSeconds)
 		dateStr = time.strftime('%Y%m%d',localtime)
@@ -265,23 +381,40 @@ class TriggerCamera(threading.Thread):
 			listLine += str(frameNumber)
 		self.frameList.append(listLine)
 	
+	#date,time,seconds,event,frameNumber
 	def saveOutputFile(self):
 		print 'triggercamera.saveOutputFile() is writing log file:', self.logFilePath
+		localtime = time.localtime(time.time())
 		with open(self.logFilePath, 'a') as textfile:
+			#header line
+			dateStr = time.strftime('%Y%m%d',localtime)
+			timeStr = time.strftime('%H%M%S', localtime) #expand this to have fraction
+			headerStr = 'date=' + dateStr + ','
+			headerStr += 'time=' + timeStr + ','
+			headerStr += 'trial=' + str(self.trialNumber) + ','
+			headerStr += 'fps=' + str(self.config['camera']['fps']) + ','
+			headerStr += 'width=' + str(self.config['camera']['resolution'][0]) + ','
+			headerStr += 'height=' + str(self.config['camera']['resolution'][1]) + ','
+			headerStr += 'numFrames=' + str(self.numFrames) + ','
+			headerStr += 'ardFrames=' + str(self.ardFrames)
+			#headerStr += 'filename=' + self.logFilePath 
+			#column names
+			textfile.write(headerStr + '\n')
 			textfile.write("date,time,seconds,event,frameNumber\n")
+		#data
 		with open(self.logFilePath, 'a') as textfile:
 			for item in self.frameList:
 				textfile.write("%s\n" % item)
 	
 	def newFrame(self, timeSeconds):
 		self.lastFrameTime = timeSeconds
-		self.scanImageFrame += 1
-		self.camera.annotate_text = str(self.lastFrameTime) + ' ' + str(self.scanImageFrame)
+		self.numFrames += 1
+		self.camera.annotate_text = str(self.lastFrameTime) + ' ' + str(self.numFrames)
 		
-		self.newOutputLine(timeSeconds, 'scanImageFrame', self.scanImageFrame)
+		self.newOutputLine(timeSeconds, 'numFrames', self.numFrames)
 		
-		if np.mod(self.scanImageFrame,10) == 0:
-			print timeSeconds, 'scanImageFrame is', self.scanImageFrame
+		#if np.mod(self.numFrames,10) == 0:
+		#	print timeSeconds, 'numFrames is', self.numFrames
 		  
 	def GetTimestamp(self):
 		#returns integer seconds (for file names)
@@ -340,14 +473,16 @@ class TriggerCamera(threading.Thread):
 							stopOnTrigger = 0
 							while not stopOnTrigger and self.videoStarted and (time.time()<(self.startTime + self.recordDuration)):
 								self.camera.wait_recording(1) # seconds
+								#print 'wait_recording() finished'
 								#this is for single trigger/frame pin in ScanImage
 								if not useTwoTriggerPins and (time.time() > (self.lastFrameTime + self.lastFrameTimeout)):
 									print 'run() is stopping after last frame timeout'
 									stopOnTrigger = 1
 								
-							self.stopVideo() #
+							print '\ttriggercamera::run() received stopOnTrigger OR self.videoStarted==0 OR past recordDuration'
 							self.camera.split_recording(self.stream)
-							print '\tVideoServer received self.videoStarted==0 or past recordDuration'
+							self.stopVideo() #
+							#self.saveArduinoOutput()
 							#self.sendtoserver()
 						
 						#capture a foo.jpg frame every stillInterval seconds
@@ -358,7 +493,7 @@ class TriggerCamera(threading.Thread):
 							print 'capturing still frame:', self.lastimage
 							self.camera.capture(self.savepath + self.lastimage, use_video_port=True)
 			
-						time.sleep(0.001) # seconds
+						time.sleep(0.005) # seconds
 					except:
 						print '\tVideoServer except clause -->>ERROR'
 				print '\tVideoServer.run() fell out of while(self.isArmed) loop'
@@ -369,3 +504,31 @@ class TriggerCamera(threading.Thread):
 		if self.camera:
 			self.camera.close()
 		GPIO.cleanup()
+		
+	def drivespaceremaining(self):
+		#see: http://stackoverflow.com/questions/51658/cross-platform-space-remaining-on-volume-using-python
+		statvfs = os.statvfs('/home/pi/video')
+		
+		#http://www.stealthcopter.com/blog/2009/09/python-diskspace/
+		capacity = statvfs.f_bsize * statvfs.f_blocks
+		available = statvfs.f_bsize * statvfs.f_bavail
+		used = statvfs.f_bsize * (statvfs.f_blocks - statvfs.f_bavail) 
+		#print used/1.073741824e9, available/1.073741824e9, capacity/1.073741824e9
+		print 'drivespaceremaining()', used/1.073741824e9, available/1.073741824e9, capacity/1.073741824e9
+		self.gbRemaining = available/1.073741824e9
+		self.gbSize = capacity/1.073741824e9
+
+		#round to 2 decimal places
+		self.gbRemaining = "{0:.2f}".format(self.gbRemaining)
+		self.gbSize = "{0:.2f}".format(self.gbSize)
+		
+		#self.gbRemaining = statvfs.f_bavail * statvfs.f_frsize / 1024 / 1024 / 1000 #GB available
+		#self.gbSize = statvfs.f_blocks * statvfs.f_frsize / 1024 / 1024 / 1000 #GB size
+		print self.gbRemaining, self.gbSize
+
+		#cpu temperature
+		res = os.popen('vcgencmd measure_temp').readline()
+		self.cpuTemperature = res.replace("temp=","").replace("'C\n","")
+		print 'cpu temp = ', self.cpuTemperature
+		
+		

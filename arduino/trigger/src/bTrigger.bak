@@ -1,0 +1,73 @@
+//	Date: 20160528
+//	Author: Robert H. Cudmore
+//
+//	Class that encapsulates receiving a trigger
+//	Inherit from this class and respond to start/stop/frame with member functions
+
+#include "Arduino.h"
+
+class bTrigger
+{
+	/////////////////////////////////////////////////////////////////
+	//init
+	int triggerPin;
+	int framePin;
+	int eventPin;
+	int ledPin;
+	
+	/////////////////////////////////////////////////////////////////
+	public:
+	bTrigger(int theTriggerPin, int theFramePin, int theEventPin, int theLedPin) {
+
+		triggerPin = theTriggerPin;
+		framePin = theFramePin;
+		eventPin = theEventPin;
+		ledPin = theLedPin;
+		
+		pinMode(triggerPin, INPUT);     
+		pinMode(framePin, INPUT);     
+		pinMode(eventPin, INPUT);     
+		pinMode(ledPin, OUTPUT);     
+
+	};
+
+	/////////////////////////////////////////////////////////////////
+	void startReceived(unsigned long now) {
+	
+	}
+	/////////////////////////////////////////////////////////////////
+	void stopReceived(unsigned long now) {
+	
+	}
+	/////////////////////////////////////////////////////////////////
+	void frameReceived(unsigned long now) {
+	
+	}
+	/////////////////////////////////////////////////////////////////
+	void eventReceived(unsigned long now) {
+	
+	}
+	/////////////////////////////////////////////////////////////////
+	void Update()
+	{
+		unsigned long now = millis();
+	}
+	
+}; //class
+
+// start of main Arduino code
+int triggerPin = 2;
+int framePin = 3;
+int eventPin = 12;
+int ledPin = 13;
+
+bTrigger myTrigger(triggerPin, framePin, eventPin, ledPin);
+ 
+void setup()
+{
+}
+ 
+void loop()
+{
+	myTrigger.Update();
+}
