@@ -101,6 +101,20 @@ There are two different trigger options. These are set in the [config.ini][confi
 
 ## Installing required Python libraries
 
+Install python development headers
+
+    sudo apt-get install python-dev 
+    
+Some libraries can not be installed with pip.
+
+    sudo apt-get install python-eventlet
+    sudo apt-get install python-pandas
+    sudo pip install plotly
+
+The remaining libraries can be installed with pip. For example, to install ConfigParser
+
+   pip install ConfigParser
+   
 ### Python interface
 
     pyserial
@@ -117,10 +131,16 @@ There are two different trigger options. These are set in the [config.ini][confi
 	pandas
 	plotly
 
-All these libraries except pandas can be install with `pip install xxx` where xxx is the library name. Install pandas with
+## Arduino
 
-    sudo apt-get install python-pandas
-    
+Arduino code is provided in [/arduino][arduino_code]. This code uses an Arduino Teensy as a 'pass through' device, receiving 5V TTL pulses and passing them along to the Raspberry Pi at 3.5V. The Arduino code will also [simulate a microscope][bSimulateScope], sending triggers for 'trial' and 'frame'.
+
+See [this blog post](platformio_blog) on installing and configuring PlatformIO and an Arduino on a Raspberry Pi.
+
+Once PlatformIO is installed and configured, upload code to an Arduino using
+
+    cd /home/pi/triggercamera/arduino/bExperiment
+    platformio run --target upload
 	
 # Running the camera
 
@@ -173,6 +193,10 @@ The camera can be controlled through a web browser as follows.
     http://192.168.1.12:5010/timelapseon
     http://192.168.1.12:5010/timelapseoff
     http://192.168.1.12:5010/lastimage
+
+## Streaming video in the web interface
+
+Optionally, video can be streamed from the camera to the web interface. This requires [uv4l][uv4l] to be installed. See [this blog post][uv4l_blog] to install uv4l on a Raspberry Pi. Once the core (and open source) v4l2 is working on the Raspberry Pi, the code will be switched to use this.
 
 <!--
 ## LCD and keypad interface
@@ -321,3 +345,9 @@ By creating a system with a Raspberry Pi there are a large number of ways to qui
 [testing_v2]: https://github.com/cudmore/triggercamera/blob/master/arduino/v2/src/v2.cpp
 
 [picamera_fov]: http://picamera.readthedocs.io/en/release-1.10/fov.html
+
+[arduino_code]: https://github.com/cudmore/triggercamera/tree/master/arduino/bExperiment
+[bSimulateScope]: https://github.com/cudmore/triggercamera/blob/master/arduino/bExperiment/lib/bSimulateScope/bSimulateScope.h
+[uv4l]: http://www.linux-projects.org/modules/sections/index.php?op=viewarticle&artid=14
+[uv4l_blog]: http://blog.cudmore.io/post/2016/06/05/uv4l-on-Raspberry-Pi/
+[platformio_blog]: http://blog.cudmore.io/post/2016/02/07/platformio/
