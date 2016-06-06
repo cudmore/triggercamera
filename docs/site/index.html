@@ -127,6 +127,8 @@
         
             <li><a href="#installing-required-python-libraries">Installing required Python libraries</a></li>
         
+            <li><a href="#arduino">Arduino</a></li>
+        
     
         <li class="main "><a href="#running-the-camera">Running the camera</a></li>
         
@@ -135,6 +137,8 @@
             <li><a href="#python-command-line">Python command line</a></li>
         
             <li><a href="#web-interface_1">Web interface</a></li>
+        
+            <li><a href="#streaming-video-in-the-web-interface">Streaming video in the web interface</a></li>
         
     
         <li class="main "><a href="#user-configuration">User configuration</a></li>
@@ -397,6 +401,16 @@ Transistor–transistor logic (TTL) and general-purpose input/output (GPIO) are 
 <p><code>**Important:**</code> The Raspberry Pi can only accept GPIO signals at 3.5V. Many devices use 5V for GPIO/TTL signals. Thus, a level shifter is needed to convert 5V to 3.5V. It is easy to make a <a href="https://learn.sparkfun.com/tutorials/voltage-dividers">voltage divider</a> by hand or to buy a pre-made <a href="https://www.adafruit.com/product/757">voltage level shifter</a>.</p>
 <p><IMG SRC="img/gpio-pinout-v2.png" WIDTH=700></p>
 <h2 id="installing-required-python-libraries">Installing required Python libraries</h2>
+<p>Install python development headers</p>
+<pre><code>sudo apt-get install python-dev
+</code></pre>
+<p>Some libraries can not be installed with pip.</p>
+<pre><code>sudo apt-get install python-eventlet
+sudo apt-get install python-pandas
+sudo pip install plotly
+</code></pre>
+<p>The remaining libraries can be installed with pip. For example, to install ConfigParser</p>
+<p>pip install ConfigParser</p>
 <h3 id="python-interface">Python interface</h3>
 <pre><code>pyserial
 RPi.GPIO
@@ -411,8 +425,12 @@ eventlet
 pandas
 plotly
 </code></pre>
-<p>All these libraries except pandas can be install with <code>pip install xxx</code> where xxx is the library name. Install pandas with</p>
-<pre><code>sudo apt-get install python-pandas
+<h2 id="arduino">Arduino</h2>
+<p>Arduino code is provided in <a href="https://github.com/cudmore/triggercamera/tree/master/arduino/bExperiment">/arduino</a>. This code uses an Arduino Teensy as a 'pass through' device, receiving 5V TTL pulses and passing them along to the Raspberry Pi at 3.5V. The Arduino code will also <a href="https://github.com/cudmore/triggercamera/blob/master/arduino/bExperiment/lib/bSimulateScope/bSimulateScope.h">simulate a microscope</a>, sending triggers for 'trial' and 'frame'.</p>
+<p>See <a href="http://blog.cudmore.io/post/2016/02/07/platformio/">this blog post</a> on installing and configuring PlatformIO and an Arduino on a Raspberry Pi.</p>
+<p>Once PlatformIO is installed and configured, upload code to an Arduino using</p>
+<pre><code>cd /home/pi/triggercamera/arduino/bExperiment
+platformio run --target upload
 </code></pre>
 <h1 id="running-the-camera">Running the camera</h1>
 <h2 id="live-video-output">Live video output</h2>
@@ -453,6 +471,8 @@ http://192.168.1.12:5010/timelapseon
 http://192.168.1.12:5010/timelapseoff
 http://192.168.1.12:5010/lastimage
 </code></pre>
+<h2 id="streaming-video-in-the-web-interface">Streaming video in the web interface</h2>
+<p>Optionally, video can be streamed from the camera to the web interface. This requires <a href="http://www.linux-projects.org/modules/sections/index.php?op=viewarticle&amp;artid=14">uv4l</a> to be installed. See <a href="http://blog.cudmore.io/post/2016/06/05/uv4l-on-Raspberry-Pi/">this blog post</a> to install uv4l on a Raspberry Pi. Once the core (and open source) v4l2 is working on the Raspberry Pi, the code will be switched to use this.</p>
 <!--
 ## LCD and keypad interface
 
@@ -602,5 +622,5 @@ ipython notebook
 
 <!--
 MkDocs version : 0.15.3
-Build Date UTC : 2016-06-06 12:38:22.176628
+Build Date UTC : 2016-06-06 13:33:25.807816
 -->

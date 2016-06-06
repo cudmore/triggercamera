@@ -135,7 +135,7 @@ The remaining libraries can be installed with pip. For example, to install Confi
 
 Arduino code is provided in [/arduino][arduino_code]. This code uses an Arduino Teensy as a 'pass through' device, receiving 5V TTL pulses and passing them along to the Raspberry Pi at 3.5V. The Arduino code will also [simulate a microscope][bSimulateScope], sending triggers for 'trial' and 'frame'.
 
-See [this blog post](platformio_blog) on installing and configuring PlatformIO and an Arduino on a Raspberry Pi.
+See [this blog post][platformio_blog] on installing and configuring PlatformIO and an Arduino on a Raspberry Pi.
 
 Once PlatformIO is installed and configured, upload code to an Arduino using
 
