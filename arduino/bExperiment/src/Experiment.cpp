@@ -189,7 +189,7 @@ void setup() {
 
 	//fakeScope.set("numFrames", 300);
 	//fakeScope.set("numFrames", 1800);
-	fakeScope.set("numFrames", 1800);
+	fakeScope.set("numFrames", 600);
 }
 
 unsigned long now;

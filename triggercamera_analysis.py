@@ -1,7 +1,7 @@
 #20160522
 
 import plotly
-print 'plotly.__version__=', plotly.__version__  # version >1.9.4 required
+#print 'plotly.__version__=', plotly.__version__  # version >1.9.4 required
 import plotly.graph_objs as go
 
 import pandas as pd
@@ -12,7 +12,7 @@ import ntpath #this shuod get paths on windows?
 
 class triggercamera_analysis():
 	def __init__(self):
-		print 'construct triggercameraAnalysis'
+		#print 'construct triggercameraAnalysis'
 		self.folder = '/home/pi/video/'
 		self.list = ''
 		self.dbfile = ''
@@ -44,7 +44,7 @@ class triggercamera_analysis():
 			writefile = 'triggercamera_db_' + sessionStr + '.csv'
 		#dbFile = self.folder + writefile
 		dbFile = '/home/pi/Sites/triggercamera/triggercamera_app/static/' + writefile
-		print 'writing dbfile:', dbFile, 'sessionStr:', sessionStr
+		print 'triggercamera_analysis.builddb() writing:', dbFile, 'sessionStr:', sessionStr
 		dbID = open(dbFile, 'w')
 		
 		numFiles = 0
@@ -101,7 +101,7 @@ class triggercamera_analysis():
 						dbID.write('\n')						
 						rowIdx += 1
 		dbID.close()
-		print 'db has', numFiles
+		print '\tdb has', numFiles
 		return writefile
 
 	def plotfile(self,filePath,output_type, divWidth=500, divHeight=200):

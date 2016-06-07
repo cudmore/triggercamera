@@ -1,12 +1,19 @@
 # Trigger Camera
 
-This is a Raspberry Pi camera that responds to general purpose digital input-output (GPIO) pulses to start and stop video acquisition during an experiment. During video acquisition, external events such as frame times on a scanning microscope are watermarked on the video and saved to a text file. The camera can be controlled from a Python command prompt, via a web browser, or using a hardware LCD/keypad.
+This is documentation to construct a system with a Raspberry Pi computer that responds to general purpose digital input-output (GPIO) pulses to start and stop video acquisition during an experiment. External events such as frame times on a scanning microscope are watermarked on the video and saved to a text file. The camera can be controlled from a Python command prompt or with a web browser.
 
-<IMG SRC="img/triggercamera-minimized2.png" WIDTH=450 style="border:1px solid gray">
+<IMG SRC="img/triggercamera-minimized.png" WIDTH=450 align="left" style="border:1px solid gray; margin:10px 20px"">
+
+<BR>
+**Figure 1. Web-browser interface.**
+
+Example web interface for the Trigger Camera. See [web help](/webhelp) for more information
+
+<BR CLEAR="ALL"/>
 
 # Overview
 
-This Raspberry Pi camera is designed to integrate into our [Treadmill](http://cudmore.github.io/treadmill) system. The Treadmill system is advantageous if an Arduino is needed to precisely control other pieces of equipment like LEDs, motors, or valves.
+This Raspberry Pi Trigger Camera camera is designed to integrate into our [Treadmill](http://cudmore.github.io/treadmill) system. The Treadmill system is advantageous if an Arduino is needed to precisely control other pieces of equipment like LEDs, motors, or valves.
 
 ## The Raspberry Pi
 
@@ -34,7 +41,7 @@ The Raspberry Pi camera has the following resolutions and FPS. Set the resolutio
 
 The Raspberry Pi runs Linux and like other operating systems including Microsoft Windows and Mac OS it is not real time. There will always be unpredictable delays in the detection and generation of GPIO pulses. If the detection of a fast pulse or the timing of a pulse is critical for an experiment it is strongly suggested to use a more precise microcontroller like an Arduino.
 
-See the **Analysis** section for example Python code to test the limits of this precision.
+See the [Analysis](index.md#analysis) section for example Python code to test the limits of this precision.
 
 <!--
 ## TTL versus GPIO
@@ -57,7 +64,7 @@ The total cost should be about $150. These parts are widely available at many di
 |1	|USB Memory	|To save video, 32GB or 64GB is a good starting point	|$10-$15	|[link](http://www.amazon.com/s?rh=n%3A3151491%2Cp_n_size_browse-bin%3A1259716011)
 |1	|Voltage level shifter	|To convert 5V GPIO to 3.5V	|$4	|[link][levelshifter]
 |4	|IR LEDS	|<900nm is best	|$0.95	|[850nm](https://www.sparkfun.com/products/9469)/[950nm](https://www.sparkfun.com/products/9349)
-|4	|xxx Ohm resistors	|One for each IR LED	|$7 (for 500 pack)	|[link](https://www.sparkfun.com/products/10969?gclid=Cj0KEQjwjoC6BRDXuvnw4Ym2y8MBEiQACA-jWTV674jgG9mRsuvTandLS6fLJtRMrtjP72GI4fvFieAaAjWH8P8HAQ)
+|4	|Resistors	|One for each IR LED	|$7 (for 500 pack)	|[link](https://www.sparkfun.com/products/10969?gclid=Cj0KEQjwjoC6BRDXuvnw4Ym2y8MBEiQACA-jWTV674jgG9mRsuvTandLS6fLJtRMrtjP72GI4fvFieAaAjWH8P8HAQ)
 |1	|5V relay	|To turn higher voltages like 12V on and off	|$3	|[link](http://www.sainsmart.com/4-channel-5v-relay-module-for-pic-arm-avr-dsp-arduino-msp430-ttl-logic.html)
 
 One option is to buy a Raspberry Pi starter kit from [Canakit][canakit]. These kits include most of the parts needed to get a fully working Raspberry Pi.
@@ -82,7 +89,7 @@ We are not going to provide a full tutorial here and will assume a functioning R
 
 ## Choosing the triggers
 
-There are two different trigger options. These are set in the [config.ini][config.ini] file using `useTwoTriggerPins: 1`
+There are two different trigger options. These are set in the [config.ini][config.ini] file using `useTwoTriggerPins`
 
  - Two trigger pins, one for triggering start/stop of video and a second for triggering frames. This is the preferred triggering system. This is used to interface with a [Bruker][bruker] microscope.
  - One trigger pin for both trigger and frames. This is used to interface with a microscope running [ScanImage][scanimage] software.
@@ -91,8 +98,7 @@ There are two different trigger options. These are set in the [config.ini][confi
 
  - Connect camera to Raspberry Pi
  - Connect signal and ground of GPIO/TTL cables from other equipment to the Raspberry Pi (be sure to convert incoming 5V GPIO to 3.5V)
- - Connect IR LEDs to the Raspberry Pi. If LEDs need a lot of power, hook them up with a 5V relay and an external 12V power supply.
-    - See [this tutorial](http://www.raspberrypi-spy.co.uk/2012/06/control-led-using-gpio-output-pin/
+ - Connect IR LEDs to the Raspberry Pi. If LEDs need a lot of power, hook them up with a 5V relay and an external 12V power supply. See [this tutorial](http://www.raspberrypi-spy.co.uk/2012/06/control-led-using-gpio-output-pin/
  ) to wire a 5V LED to the Raspberry Pi.
  
 `**Important:**` The Raspberry Pi can only accept GPIO signals at 3.5V. Many devices use 5V for GPIO/TTL signals. Thus, a level shifter is needed to convert 5V to 3.5V. It is easy to make a [voltage divider][voltagedivider] by hand or to buy a pre-made [voltage level shifter][levelshifter].
@@ -103,16 +109,15 @@ There are two different trigger options. These are set in the [config.ini][confi
 
 ### Clone github repository
 
-    mkdir Sites
-    cd Sites
+This will download all the neccessary code into a directory named 'triggercamera'
+
     git clone https://github.com/cudmore/triggercamera.git
     
 ### Run install script
 
-We provide a ./install.sh script to install all reuquired libraries. If this script fails, try installing manually.
+We provide a ./install.sh script to install all required libraries. If this script fails, try installing manually.
 
-    cd /home/pi/Sites/triggercamera
-    chmod +x ./install.sh
+    cd triggercamera
     ./install.sh
 
 ### Installing required Python libraries (manual)
@@ -138,19 +143,21 @@ The remaining libraries can be installed with pip.
 	
 ## Arduino
 
+Optional Arduino code is provided in [triggercamera/arduino][arduino_code]. This code uses an Arduino as a 'pass through' device, receiving 5V TTL pulses and passing them along to the Raspberry Pi at 3.5V (assuming an Arduino Teensy). The Arduino code will also [simulate a microscope][bSimulateScope], sending GPIO triggers for 'trial' and 'frame'.
+
 We strongly suggest using an Arduino [Teensy][teensy]. The Teensy is (i) fast, (ii) has lots of memory, (iii) accepts 5V GPIO and outputs 3.5V, and (iv) all GPIO pins can be assigned as low level interrupts.
 
-Arduino code is provided in [/arduino][arduino_code]. This code uses an Arduino as a 'pass through' device, receiving 5V TTL pulses and passing them along to the Raspberry Pi at 3.5V. The Arduino code will also [simulate a microscope][bSimulateScope], sending triggers for 'trial' and 'frame'.
+PlatformIO is a command line interface to compile and upload code to an Arduino. It is easy to run at the command prompt on a Raspberry Pi. See [this blog post][platformio_blog] on installing and configuring PlatformIO.
 
-See [this blog post][platformio_blog] on installing and configuring PlatformIO and an Arduino on a Raspberry Pi.
+Once PlatformIO is installed and configured to talk to an Arduino, upload code to an Arduino using
 
-Once PlatformIO is installed and configured to talk to an Arduino Teensy, upload code to an Arduino using
-
-    cd /home/pi/triggercamera/arduino/bExperiment
+    cd triggercamera/arduino/bExperiment
     platformio run --target upload
 
-The correct serial port needs to be specified in [config.ini][config.ini]
+The correct serial port needs to be specified in [config.ini][config.ini]. Find the Arduinos serial port by looking for something like ttyACM0 in
 
+	ls /dev/tty*
+	
 # Running the camera
 
 ## Live video output
@@ -163,10 +170,10 @@ The primary interface for controlling the camera is through the Python command p
 
 The [iPython][ipython] command line interface should be used.
 
-With [triggercamera.py][triggercamera], the camera can be controlled with a Python command line. Once the camera is armed with 'ArmTrigger()' it will start and stop video recording following GPIO triggers.
+With [triggercamera.py][triggercamera], the camera can be controlled with a Python command line. Once the camera is armed with 'startArm()', it will start and stop video recording following GPIO triggers.
 
 	import triggercamera
-	tc=triggercamera.TriggerCamera()
+	tc = triggercamera.TriggerCamera()
 	tc.startArm() #arm the camer to respond to triggers
 	
 	tc.stopArm() #stop the camera from responding to trigger
@@ -185,15 +192,25 @@ Additional interface
 
 ## Web interface
 
-[triggercamera_app.py][triggercamera_app] provides a web server allowing the camera to be controlled through a web browser. The web server is run using [Flask][flask] and provides a REST api as a wrapper to interact with the triggercamera.py Python code.
+[triggercamera_app.py][triggercamera_app] provides a web server allowing the camera to be controlled through a web browser.
 
-Run a web server with
+Run the web server with
 
     python triggercamera_app.py
 
-The server will be available on the local IP address of the machine running the code, in this case '192.168.1.12'. The server will run on port 5010.
+Then, bring up the web page from a browser (we suggest Chrome) using the IP address of the Raspberry and port 5010
 
-The camera can be controlled through a web browser as follows.
+    http://192.168.1.60:5010
+
+Additional documentation on using this web interface is in the [web help](/webhelp) page.
+
+### Streaming video in the web interface
+
+Optionally, real-time video can be streamed from the camera to the web interface. This requires [uv4l][uv4l] to be installed. See [this blog post][uv4l_blog] to install uv4l on a Raspberry Pi.
+
+### REST Interface
+
+In addition to the point and click web interface, the web server provides a [REST][rest] interface that can be remotely scripted using a set of web addresses.
 
     http://192.168.1.12:5010/startarm
     http://192.168.1.12:5010/stoparm
@@ -203,9 +220,16 @@ The camera can be controlled through a web browser as follows.
     http://192.168.1.12:5010/timelapseoff
     http://192.168.1.12:5010/lastimage
 
-## Streaming video in the web interface
+### Client side code
 
-Optionally, video can be streamed from the camera to the web interface. This requires [uv4l][uv4l] to be installed. See [this blog post][uv4l_blog] to install uv4l on a Raspberry Pi. Once the core (and open source) v4l2 is working on the Raspberry Pi, the code will be switched to use this.
+The web server is running in Python on the raspberry Pi. When a web page is served to a client, the interface is provided using a large collection of client-side code written in [JavaScript][javascript].
+
+- [Socket-io][socketio] allows the Flask server to push updates to web-page without reloading the page
+- [Bootstrap][bootstrap] for page layout, buttons, sliders, value display
+- [jquery][jquery] to handle logic of user interface
+- [plotly.js][plotly] to plot the arduino stimulus
+- [highcharts.js][highcharts] to plot a trial in real-time while it is running (only used in treadmilll)
+- [jqgrid][jqgrid] to display a table of trials from disk
 
 <!--
 ## LCD and keypad interface
@@ -217,58 +241,73 @@ Optionally, video can be streamed from the camera to the web interface. This req
 
 Modify [config.ini][config.ini] and restart the camera code
 
+	[serial]
+	useSerial: True
+	port: /dev/ttyACM0
+	baud: 9600
+
+	[system]
+	savepath: /video
+
+	watchedpathon: False
+	watchedpath: ''
+
 	[triggers]
-	useTwoTriggerPins: True
-	triggerpin: 4
+	useTwoTriggerPins: 1
+	triggerpin: 27
 	framepin: 17
 
 	[led]
-	led1pin: 2
-	led2pin: 3
+	ledpin1: 2
+	ledpin2: 3
 
 	[camera]
 	fps: 30
 	resolution: 640,480
 	bufferSeconds = 5
 
-	watchedpathon: 1
-	watchedpath: /video
-
-	savepath: /video
+	[simulatescope]
+	on: 1
+	initialDelay: 1
+	frameInterval: 30
+	frameNumber: 300
 
 # Output video
 
-Video is saved in the [h264][h264] video format. This is a very efficient video codec that make very small but highly detailed videos. Before these h264 video files can be analyzed, they need to be converted to include the frames per second. This can be done in a number of video editing programs. One way to do this conversion is by using the command line program [ffmpeg][ffmpeg]. Because ffmpeg can be scripted, it is easy to incorporated into most workflows.
+Video is saved in the [h264][h264] video format. This is a very efficient video codec that make very small but highly detailed videos. Before these h264 video files can be analyzed, they need to be converted to include the frames per second. This can be done in a number of video editing programs. One way to do this conversion is by using the command line program [ffmpeg][ffmpeg]. Because ffmpeg can be scripted, it is easy to incorporated into most workflows. The status of ffmpeg on the Pi is confusing. Here, we use a fork (or a nasty illegal fork?) called avconv.
 
-Use avconv
+Install avconv
 
 	sudo apt-get install libav-tools 
 	
 Convert one .h264 file
 
 	avconv -r 30 -i 20160604_181119_after.h264 -vcodec copy 20160604_181119_after.mp4
+
+Pseudocode to convert a directory of .h264 files
 	
-    srcDir = '/src/dir/with/video'
-    dstDir = 'dst/dir/for/mp4'
+    srcDir = '/src/dir/with/video/'
+    dstDir = 'dst/dir/for/mp4/'
     for file in srcDir:
-        outfile = file.strip('h264') + '.mp4'
-        ffmpeg -r 25 -i file dstDir+outfile
+        outfile = file.strip('.h264') + '.mp4'
+        avconv -r 25 -i file -vcodec copy dstDir+outfile
 
 # Output files
 
 Each time the camera is triggered to save video, a .txt file with frame times is also saved.
 
-Here are the first 5 frames of an output .txt file
+Here are the first 5 frames of an output .txt file. The first line is a header, second line gives column names, third line is start of data.
 
-	fps=30,width=640,height=480,numFrames=300
+	date=20160606,time=223717,trial=1,fps=30,width=640,height=480,numFrames=1799,ardFrames=0
 	date,time,seconds,event,frameNumber
-	20160530,214450,1464659090.31,startVideo,
-	20160530,214450,1464659090.34,scanImageFrame,2
-	20160530,214450,1464659090.37,scanImageFrame,3
-	20160530,214450,1464659090.4,scanImageFrame,4
-	20160530,214450,1464659090.43,scanImageFrame,5
-	20160530,214450,1464659090.47,scanImageFrame,6
+	20160606,223623,1465266983.09,startVideo,
+	20160606,223623,1465266983.12,numFrames,1
+	20160606,223623,1465266983.15,numFrames,2
+	20160606,223623,1465266983.18,numFrames,3
+	20160606,223623,1465266983.21,numFrames,4
+	20160606,223623,1465266983.24,numFrames,5
 
+<a name="analysis"></a>
 # Analysis
 
 ## Analyzing output .txt files
@@ -278,15 +317,14 @@ We have provided Python code to load, analyze and plot the output .txt files. Se
 Bring up an iPython web interface
 
     # if your Raspberry Pi is on the network at 'pi60'
-    cd /Volumes/pi60/Sites/triggercamera/analysis/
+    cd /Volumes/pi60/triggercamera/analysis/
     ipython notebook
 
-Here is an analysis of the frame interval detected by the Raspberry Pi and a good example of some of the limitations. Using [/arduino/v2/src/v2.cpp][testing_v2] an Arduino output a frame pulse every 31 ms.
+Here is an analysis of the frame interval detected by the Raspberry Pi and a good example of some of the limitations. Using [/arduino/bExperiment/src/bExperiment.cpp][arduino_code] an Arduino output a frame pulse every 30 ms.
 
- - The Raspberry Pi can miss frames
- - The Raspberry Pi can detect frames late
+In general, the Raspberry Pi does not miss frames but  can occasionally detect frames late. The performance of the Pi can be degraded if additional software is run on the Pi. In general, keep it minimal.
  
-<IMG SRC="img/analysis_v2.png">
+<IMG SRC="img/analysis-example.png">
 
 ## Analyzing video
 
@@ -296,7 +334,7 @@ We will provide Python code using [OpenCV][opencv] to load and browse video file
 
 By creating a system with a Raspberry Pi there are a large number of ways to quickly and cheaply extend the system in very useful ways.
 
- - Add an Arduino microcontroller
+ - [Done] Add an Arduino microcontroller
  - Add an LCD/button controller
  - Add a touch-screen interface
  
@@ -314,11 +352,12 @@ By creating a system with a Raspberry Pi there are a large number of ways to qui
 
    
 
-## To Do
+# To Do
  - **Done:** Implement a Flask homepage to provide buttons to control camera and feedback during a trial.
  - **Done:** Add control and interface for two LEDs (e.g. IR and white).
  - **Done:** Add a header to output files #fps=xxx;width=xxx;height=xxx
  - Write a Python script to batch process a folder of .h264 into .mp4 (with fps)
+ - Write a python video browser using Open-CV.
  - **Will not do this:** try using easydict so i can use'.' notation in code
  - Add a physical emergency 'stop' button
  
@@ -361,3 +400,12 @@ By creating a system with a Raspberry Pi there are a large number of ways to qui
 [uv4l_blog]: http://blog.cudmore.io/post/2016/06/05/uv4l-on-Raspberry-Pi/
 [platformio_blog]: http://blog.cudmore.io/post/2016/02/07/platformio/
 [teensy]: https://www.pjrc.com/store/teensy3.html
+[rest]: https://en.wikipedia.org/wiki/Representational_state_transfer
+
+[bootstrap]: http://getbootstrap.com
+[socketio]: https://flask-socketio.readthedocs.org/en/latest/
+[plotly]: https://plot.ly/javascript/
+[highcharts]: http://www.highcharts.com
+[jqgrid]: http://www.trirand.com/blog/
+[jquery]: https://jquery.com
+[javascript]: https://www.javascript.com

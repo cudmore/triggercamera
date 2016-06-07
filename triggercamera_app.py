@@ -30,22 +30,21 @@ from flask.ext.socketio import SocketIO, emit
 import eventlet
 #import json
 
-print 'triggercamera_app import triggercamera and triggercamera_analysis'
+print '\timport triggercamera and triggercamera_analysis'
 
 import triggercamera
 import triggercamera_analysis
 
 #see: https://github.com/miguelgrinberg/Flask-SocketIO/issues/192
-print 'triggercamera_app calling eventlet.monkey_patch()'
 eventlet.monkey_patch()
 
-print 'triggercamera_app starting Flask server at:', time.strftime("%m/%d/%y"), time.strftime("%H:%M:%S")
+print '\tstarting Flask server at:', time.strftime("%m/%d/%y"), time.strftime("%H:%M:%S")
 
 app = Flask(__name__, template_folder='triggercamera_app/templates', static_folder='triggercamera_app/static')
 
 socketio = SocketIO(app, async_mode='eventlet')
 
-print 'instantiating triggercamera.TriggerCamera()'
+print '\tinstantiating triggercamera.TriggerCamera()'
 v=triggercamera.TriggerCamera()
 #v.ArmTrigger()
 #v.startArm()
@@ -95,7 +94,7 @@ def genericresponse():
 	resp['triggerPin'] = v.config['triggers']['triggerpin']
 	resp['framePin'] = v.config['triggers']['framepin']
 
-	resp['serialPort'] = v.config['serialPort']
+	resp['serialPort'] = v.config['serial']['port']
 
 	resp['gbSize'] = v.gbSize
 	resp['gbRemaining'] = v.gbRemaining
@@ -110,14 +109,14 @@ def genericresponse():
 def plotTrialButton(message):
 	logFilePath = v.logFilePath #message['data']
 	if logFilePath:
-		print 'plotTrialButton() logFilePath:', logFilePath
+		#print 'plotTrialButton() logFilePath:', logFilePath
 		divStr = tca.plotfile(logFilePath,'div')
 		emit('lastTrialDiv', {'plotDiv': divStr})
 
 @socketio.on('plotAnalysisTrialButtonID', namespace=namespace)
 def plotAnalysisTrialButtonID(message):
 	filePath = message['data']
-	print 'plotTrialButton2() filename:' + filePath
+	#print 'plotTrialButton2() filename:' + filePath
 	divStr = tca.plotfile(filePath,'div', divWidth=600, divHeight=300)
 	emit('plotTrialDiv', {'plotDiv': divStr})
 
@@ -263,7 +262,7 @@ def get_index():
 #start the app/webserver
 if __name__ == "__main__":
 	try:
-		print 'triggercamera_app::__main__'
+		print '\ttriggercamera_app::__main__'
 		#app.run(host='0.0.0.0', port=5010, use_reloader=True, debug=True)
 		socketio.run(app, host='0.0.0.0', port=5010, use_reloader=False)
 	except:

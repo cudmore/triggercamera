@@ -103,6 +103,18 @@ class bSimulateScope
 		Serial.println("framePinDur=" + String(framePinDur));	
 	}
 	/////////////////////////////////////////////////////////////
+	void set(String param, int value) {
+		if (param == "frameInterval") {
+			frameInterval = value;
+		} else if (param == "numFrames") {
+			numFrames = value;
+		} else if (param == "framePinDur") {
+			framePinDur = value;
+		} else {
+			Serial.println("bSimulateScope::set() did not understand '" + param + "'");
+		}
+	}
+	/////////////////////////////////////////////////////////////
 	void serialOut(unsigned long now, String str, unsigned long val) {
 		Serial.println(String(now) + "," + str + "," + val);
 	}
@@ -124,8 +136,16 @@ class bSimulateScope
 		}
 		else if (str == "start") {
 			trialStart(now);
-		} else {
-			return false;
+		} else if (str.indexOf("set") == 0) {
+			int firstComma = str.indexOf(",");
+			if (firstComma >= 0) {
+				int secondComma = str.indexOf(",", firstComma+1);
+				if (secondComma >= 0) {
+					String param = str.substring(firstComma+1,secondComma-1);
+					int value = str.substring(secondComma+1,str.length()-1).toInt();
+					set(param,value);
+				}
+			}
 		}
 		return true;
 	}
@@ -154,18 +174,6 @@ class bSimulateScope
 			}
 			isRunning = false;
 			//serialOut(now, "trialStop", currentFrame);
-		}
-	}
-	/////////////////////////////////////////////////////////////
-	void set(String param, int value) {
-		if (param == "frameInterval") {
-			frameInterval = value;
-		} else if (param == "numFrames") {
-			numFrames = value;
-		} else if (param == "framePinDur") {
-			framePinDur = value;
-		} else {
-			Serial.println("bSimulateScope::set() did not understand '" + param + "'");
 		}
 	}
 		
