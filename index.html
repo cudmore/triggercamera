@@ -160,7 +160,8 @@
     
         <li class="main "><a href="#troubleshooting">Troubleshooting</a></li>
         
-            <li><a href="#to-do">To Do</a></li>
+    
+        <li class="main "><a href="#to-do">To Do</a></li>
         
     
     </ul>
@@ -474,7 +475,7 @@ tc.doTimelapse=0
 <h3 id="streaming-video-in-the-web-interface">Streaming video in the web interface</h3>
 <p>Optionally, real-time video can be streamed from the camera to the web interface. This requires <a href="http://www.linux-projects.org/modules/sections/index.php?op=viewarticle&amp;artid=14">uv4l</a> to be installed. See <a href="http://blog.cudmore.io/post/2016/06/05/uv4l-on-Raspberry-Pi/">this blog post</a> to install uv4l on a Raspberry Pi.</p>
 <h3 id="rest-interface">REST Interface</h3>
-<p>In addition to the point and click web interface, the web server provides a REST interface that can be remotely scripted using a set of <a href="https://en.wikipedia.org/wiki/Representational_state_transfer">REST</a> web addresses.</p>
+<p>In addition to the point and click web interface, the web server provides a <a href="https://en.wikipedia.org/wiki/Representational_state_transfer">REST</a> interface that can be remotely scripted using a set of web addresses.</p>
 <pre><code>http://192.168.1.12:5010/startarm
 http://192.168.1.12:5010/stoparm
 http://192.168.1.12:5010/startvideo
@@ -483,6 +484,16 @@ http://192.168.1.12:5010/timelapseon
 http://192.168.1.12:5010/timelapseoff
 http://192.168.1.12:5010/lastimage
 </code></pre>
+<h3 id="client-side-code">Client side code</h3>
+<p>The web server is running in Python on the raspberry Pi. When a web page is served to a client, the interface is provided using a large collection of client-side code written in <a href="https://www.javascript.com">JavaScript</a>.</p>
+<ul>
+<li><a href="https://flask-socketio.readthedocs.org/en/latest/">Socket-io</a> allows the Flask server to push updates to web-page without reloading the page</li>
+<li><a href="http://getbootstrap.com">Bootstrap</a> for page layout, buttons, sliders, value display</li>
+<li><a href="https://jquery.com">jquery</a> to handle logic of user interface</li>
+<li><a href="https://plot.ly/javascript/">plotly.js</a> to plot the arduino stimulus</li>
+<li><a href="http://www.highcharts.com">highcharts.js</a> to plot a trial in real-time while it is running (only used in treadmilll)</li>
+<li><a href="http://www.trirand.com/blog/">jqgrid</a> to display a table of trials from disk</li>
+</ul>
 <!--
 ## LCD and keypad interface
 
@@ -586,12 +597,13 @@ ipython notebook
 <p>See <a href="http://raspberrypi.stackexchange.com/questions/34444/cant-get-a-cifs-network-drive-to-mount-on-boot">this</a> to auto mount an SMB share on boot</p>
 </li>
 </ul>
-<h2 id="to-do">To Do</h2>
+<h1 id="to-do">To Do</h1>
 <ul>
 <li><strong>Done:</strong> Implement a Flask homepage to provide buttons to control camera and feedback during a trial.</li>
 <li><strong>Done:</strong> Add control and interface for two LEDs (e.g. IR and white).</li>
 <li><strong>Done:</strong> Add a header to output files #fps=xxx;width=xxx;height=xxx</li>
 <li>Write a Python script to batch process a folder of .h264 into .mp4 (with fps)</li>
+<li>Write a python video browser using Open-CV.</li>
 <li><strong>Will not do this:</strong> try using easydict so i can use'.' notation in code</li>
 <li>Add a physical emergency 'stop' button</li>
 </ul></div>
@@ -643,5 +655,5 @@ ipython notebook
 
 <!--
 MkDocs version : 0.15.3
-Build Date UTC : 2016-06-07 11:50:21.889988
+Build Date UTC : 2016-06-07 12:05:40.339170
 -->
