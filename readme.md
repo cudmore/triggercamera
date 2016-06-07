@@ -6,6 +6,16 @@ This is a Raspberry Pi camera that responds to general purpose digital input-out
 
 <IMG SRC="docs/docs/img/triggercamera-minimized.png" WIDTH=450 style="border:1px solid gray">
 
+### Installation
+
+Clone this git repository with
+
+    git clone https://github.com/cudmore/triggercamera.git
+    
+### Configuration
+
+On a Rapsberry Pi, run ./install.sh to install all required libraries.
+
 ### triggercamera.py
 
 Allows interaction through a Python command prompt.  Run with `python triggercamera.py`.
@@ -50,13 +60,13 @@ Main configuration file to control how Trigger Camera behaves.
 
 	savepath: /video
 
+### /arduino/bExperiment/
+
+Arduino code to run an experiment. This code provides a /arduino/bExperiment class that will manage trial and frame triggers as low-level interrupts. It also provides /arduino/lib/bSimulateScope to simulate a microscope by sending out trial and trigger GPIO pulses.
+
 ### /analysis/
 
 Example iPython/Jupyter notebook to load output .txt files and measure the performance of the camera.
-
-### /testing/
-
-Arduino code that simulates hardware by setting GPIO pins for start/stop trial and frame.
 
 ### /docs/
 
