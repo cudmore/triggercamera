@@ -2,9 +2,9 @@ Please see the most up to date documentation at: [Trigger Camera Documetation][d
 
 # Trigger Camera
 
-This is a Raspberry Pi camera that responds to general purpose digital input-output (GPIO) pulses to start and stop video acquisition during an experiment. During video acquisition, external events such as frame times on a scanning microscope are watermarked on the video and saved to a text file. The camera can be controlled from a Python command prompt, via a web browser, or using a hardware LCD/keypad.
+This is a Raspberry Pi camera that responds to general purpose digital input-output (GPIO) pulses to start and stop video acquisition during an experiment. During video acquisition, external events such as frame times on a scanning microscope are watermarked on the video and saved to a text file. The camera can be controlled from a Python command prompt or a web browser.
 
-<IMG SRC="docs/docs/img/triggercamera-minimized2.png" WIDTH=450 style="border:1px solid gray">
+<IMG SRC="docs/docs/img/triggercamera-minimized.png" WIDTH=450 style="border:1px solid gray">
 
 ### triggercamera.py
 
