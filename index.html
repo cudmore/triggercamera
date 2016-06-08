@@ -180,7 +180,7 @@
 <h2 id="the-raspberry-pi">The Raspberry Pi</h2>
 <p>The Raspberry Pi is a low cost ($35) computer that runs Linux. In addition to USB, ethernet, and HDMI connectors, the Raspberry Pi has a dedicated camera port and GPIO ports. Both the camera and GPIO ports can be easily programmed using Python. The Raspberry Pi provides an end-to-end open source system. Both the hardware and the software is provided by <a href="https://www.raspberrypi.org">The Raspberry Pi Foundation</a> and is actively maintained and extended by an active developer community.</p>
 <h2 id="software-implementation">Software implementation</h2>
-<p>The software provided here will run a Raspberry Pi camera as a slave to other devices already in place for an experiment. Once the camera is armed, it will continuously record a circular stream of video in memory. When a digital trigger is received, the the video will begin being saved to disk. In addition to saving the video after a trigger, the video before the trigger will also be saved. This has the distinct advantage of given you a record of what your animal was doing  before a trial was started. In many cases, 'bad trials' can be found because there was a lot of movement (or some other abberent event) before a trial began.</p>
+<p>The software provided here will run a Raspberry Pi camera as a slave to other devices already in place for an experiment. Once the camera is armed, it will continuously record a circular stream of video in memory. When a digital trigger is received, the video will begin being saved to disk. In addition to saving the video after a trigger, the video before the trigger will also be saved. This has the distinct advantage of given you a record of what your animal was doing  before a trial was started. In many cases, 'bad trials' can be found because there was a lot of movement (or some other abberent event) before a trial began.</p>
 <h2 id="video-resolutions-and-fps">Video resolutions and FPS</h2>
 <p>The Raspberry Pi camera has the following resolutions and FPS. Set the resolution and FPS in the <a href="https://github.com/cudmore/triggercamera/blob/master/config.ini">config.ini</a> file. See the <a href="http://picamera.readthedocs.io/en/release-1.10/fov.html">PiCamera Python documentation</a> for more information.</p>
 <table>
@@ -271,8 +271,10 @@
 </table>
 <h2 id="limitations">Limitations</h2>
 <p>The Raspberry Pi runs Linux and like other operating systems including Microsoft Windows and Mac OS it is not real time. There will always be unpredictable delays in the detection and generation of GPIO pulses. If the detection of a fast pulse or the timing of a pulse is critical for an experiment it is strongly suggested to use a more precise microcontroller like an Arduino.</p>
+<p>The Raspberry Pi camera is not a high-end camera. It records compressed video files, it does not record single frames to a video file. If you require a camera that captures individual frames, you should buy a high-end camera. </p>
 <ul>
-<li>Video is split into two files (we will wrote code to combine them after a trial)</li>
+<li>Saved video files are compressed with .h264</li>
+<li>Saved video files are split into two files (we will wrote code to combine them after a trial)</li>
 <li>Some frames will be late</li>
 <li>Some frames may be missed</li>
 <li>It is difficult to predict which frames will be late and/or missed</li>
@@ -663,5 +665,5 @@ ipython notebook
 
 <!--
 MkDocs version : 0.15.3
-Build Date UTC : 2016-06-08 11:54:12.220027
+Build Date UTC : 2016-06-08 12:14:01.263731
 -->
