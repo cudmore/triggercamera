@@ -22,7 +22,7 @@ http://server/timelapseoff
 
 print 'triggercamera_app starting import of libraries'
 
-import time, datetime, platform, math
+import time, datetime, platform, math, re
 #import pprint #to print class members
 from threading import Thread
 from flask import Flask, jsonify, send_file, redirect, render_template
@@ -81,6 +81,7 @@ def genericresponse():
 	resp['numFrames'] = v.numFrames
 	resp['trialNumber'] = v.trialNumber
 	resp['logFilePath'] = v.logFilePath
+	resp['sessionID'] = v.sessionID
 	
 	resp['led1On'] = v.led1On
 	resp['led2On'] = v.led2On
@@ -105,6 +106,15 @@ def genericresponse():
 	
 	return resp
 	
+@socketio.on('sessionform', namespace=namespace)
+def sessionform(message):
+	print 'sessionform:', message
+	sessionID = message['sessionID']
+	if len(sessionID)<10 and (sessionID=='' or re.match('^\w+$',sessionID)):
+		v.sessionID = sessionID
+	response = genericresponse()		
+	socketio.emit('serverUpdate', response, namespace=namespace)
+
 @socketio.on('plotTrialButtonID', namespace=namespace)
 def plotTrialButton(message):
 	logFilePath = v.logFilePath #message['data']

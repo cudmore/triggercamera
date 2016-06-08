@@ -45,15 +45,19 @@ class TriggerCamera(threading.Thread):
 		print 'TriggerCamera() constructor'
 		threading.Thread.__init__(self)
 
+		self.version = 0.1 #20160607
+		
 		#when this script is running, it will always be armed
 		self.isArmed = 0
 		self.streamIsRunning = 0
 		self.videoStarted = 0
 
-		self.stream = None
+		self.stream = None #for the circular stream, assigned in ::startArm()
 
+		self.sessionID = ''
 		self.trialNumber = 0
 		self.trialStartTime = 0
+		
 		self.savepath = '/home/pi/video/' + time.strftime('%Y%m%d') + '/'
 		if not os.path.exists(self.savepath):
 			print '\ttriggercamera is making output directory:', self.savepath
@@ -61,7 +65,7 @@ class TriggerCamera(threading.Thread):
 		
 		self.savename = '' # the prefix to save all files
 		
-		self.logFileName = None
+		self.logFileRoot = None
 		self.logFilePath = ''
  
 		self.beforefilename = ''
@@ -295,30 +299,49 @@ class TriggerCamera(threading.Thread):
 			self.trialNumber += 1
 			self.trialStartTime = timeSeconds
 			self.numFrames = 0
+
+			#self.videoStarted = 1
+			#if self.camera:
+			#	self.camera.annotate_text = 'S'
+			#	self.camera.annotate_background = picamera.Color('black')
+			
+			sessionStr = ''
+			if self.sessionID:
+				sessionStr = '_' + self.sessionID
+			
+			self.savepath = '/home/pi/video/' + time.strftime('%Y%m%d') + sessionStr + '/'
+			if not os.path.exists(self.savepath):
+				#print '\ttriggercamera.startVideo is making output directory:'
+				#print '\t', self.savepath
+				os.makedirs(self.savepath)
+
+			self.logFileRoot = self.savename + sessionStr + '_t' + str(self.trialNumber)
+			self.logFilePath = self.savepath + self.logFileRoot + '.txt'
+			
 			self.videoStarted = 1
 			if self.camera:
 				self.camera.annotate_text = 'S'
 				self.camera.annotate_background = picamera.Color('black')
-			
-			self.logFileName = self.savename + '_t' + str(self.trialNumber) + '.txt'
-			self.logFilePath = self.savepath + self.logFileName
-			
+
 			self.frameList = []
 			self.newOutputLine(timeSeconds, 'startVideo', None)
-			print timeSeconds, 'triggercamera.startVideo()'
+			#print timeSeconds, 'triggercamera.startVideo()'
 
 	def stopVideo(self):
 		timeSeconds = time.time()
 		if self.isArmed and self.videoStarted:
-			self.videoStarted = 0
-			#if self.camera:
-			#	self.camera.annotate_text = ''
-			#	self.camera.annotate_background = None
+			#self.videoStarted = 0
+			
+			if self.camera:
+				self.camera.annotate_text = ''
+				self.camera.annotate_background = None
 
 			self.newOutputLine(timeSeconds, 'stopVideo', None)
 			self.saveOutputFile()
 			
-			self.saveArduinoOutput()
+			#self.saveArduinoOutput()
+
+			self.videoStarted = 0
 
 			self.drivespaceremaining() #calculate drive space remaining
 			print timeSeconds, 'triggercamera.stopVideo()'
@@ -388,12 +411,17 @@ class TriggerCamera(threading.Thread):
 			timeStr = time.strftime('%H%M%S', localtime) #expand this to have fraction
 			headerStr = 'date=' + dateStr + ','
 			headerStr += 'time=' + timeStr + ','
+			if self.sessionID:
+				headerStr += 'sessionID=' + self.sessionID + ','
+			else:
+				headerStr += 'sessionID=' + 'none' + ','
 			headerStr += 'trial=' + str(self.trialNumber) + ','
 			headerStr += 'fps=' + str(self.config['camera']['fps']) + ','
 			headerStr += 'width=' + str(self.config['camera']['resolution'][0]) + ','
 			headerStr += 'height=' + str(self.config['camera']['resolution'][1]) + ','
 			headerStr += 'numFrames=' + str(self.numFrames) + ','
-			headerStr += 'ardFrames=' + str(self.ardFrames)
+			headerStr += 'ardFrames=' + str(self.ardFrames) + ','
+			headerStr += 'ver=' + str(self.version)
 			#headerStr += 'filename=' + self.logFilePath 
 			#column names
 			textfile.write(headerStr + '\n')
@@ -406,7 +434,7 @@ class TriggerCamera(threading.Thread):
 	def newFrame(self, timeSeconds):
 		self.lastFrameTime = timeSeconds
 		self.numFrames += 1
-		self.camera.annotate_text = str(self.lastFrameTime) + ' ' + str(self.numFrames)
+		self.camera.annotate_text = str(self.numFrames)
 		
 		self.newOutputLine(timeSeconds, 'numFrames', self.numFrames)
 		
@@ -458,8 +486,8 @@ class TriggerCamera(threading.Thread):
 						#self.camera.wait_recording(0.005)
 						if self.videoStarted:
 							self.startTime = time.time() #seconds, linux epoch
-							self.beforefilename = self.savename + '_before' + '.h264'
-							self.afterfilename = self.savename + '_after' + '.h264'
+							self.beforefilename = self.logFileRoot + '_before' + '.h264'
+							self.afterfilename = self.logFileRoot + '_after' + '.h264'
 							self.beforefilepath = self.savepath + self.beforefilename
 							self.afterfilepath = self.savepath + self.afterfilename
 							# record the frames "after" motion
@@ -478,7 +506,7 @@ class TriggerCamera(threading.Thread):
 								
 							print '\ttriggercamera::run() received stopOnTrigger OR self.videoStarted==0 OR past recordDuration'
 							self.camera.split_recording(self.stream)
-							self.stopVideo() #
+							#self.stopVideo() #
 						
 						#capture a foo.jpg frame every stillInterval seconds
 						thistime = time.time()

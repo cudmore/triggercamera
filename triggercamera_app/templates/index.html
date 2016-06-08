@@ -5,7 +5,7 @@
 
 	<style>
 	div.page {
-		width: 500px;
+		width: 550px;
 		padding: 15px;
 		border: 0px solid gray;
 		margin: 0; 
@@ -43,7 +43,8 @@
 	}
 	td {
 		//height: 50px;
-		vertical-align: top;
+		vertical-align: center;
+		width: 150px;
 	}
 	</style>
 
@@ -71,7 +72,7 @@
 				$('#startStreamButtonID').prop('disabled', true);
 				$('#stopStreamButtonID').prop('disabled', true);
 				if (msg.videoStarted == 1) {
-					$('#spinnerTextID').html(' Running')
+					$('#spinnerTextID').html('<font color="red"> Running</font>')
 				} else {
 					$('#spinnerTextID').html(' Waiting')
 				}
@@ -104,10 +105,12 @@
 			$('#videoStartedID').html("Running: " + msg.videoStarted);
 			
 			if (msg.elapsedTime > 0) {
-				$('#elapsedTimeID').html("Elapsed Time (sec): " + msg.elapsedTime);
+				$('#elapsedTimeID').html("Elapsed (sec): " + msg.elapsedTime);
 			}
 
 			$('#numFramesID').html("Frame: " + msg.numFrames);
+			
+			$('#actualSessionID').html('Session ID: ' + msg.sessionID);
 			
 			var shortFileName = msg.logFilePath.replace(/^.*[\\\/]/, '')
 			$('#logFilePathID').html("File: " + shortFileName);
@@ -140,19 +143,19 @@
 			}
 			
 			if (msg.led1On == 1) {
-				$('#led1ID').html("LED1: On");
+				$('#led1ID').html("LED 1: On");
 			    $('#slider1').slider('enable');
 			} else {
-				$('#led1ID').html("LED1: Off");
+				$('#led1ID').html("LED 1: Off");
 			    $('#slider1').slider('disable');
 			    //var x = $("#slider1").slider();
 		        //x.slider('setValue', 0);
 			}
 			if (msg.led2On == 1) {
-				$('#led2ID').html("LED2: On");
+				$('#led2ID').html("LED 2: On");
 			    $('#slider2').slider('enable');
 			} else {
-				$('#led2ID').html("LED2: Off");
+				$('#led2ID').html("LED 2: Off");
 			    $('#slider2').slider('disable');
 			}
 		};
@@ -198,7 +201,7 @@
 			 jQuery('#simulateID').toggle('show');
 		});
 
-		//$('#videoDivID').hide() //plot is initially hidden
+		$('#videoDivID').hide() //plot is initially hidden
 		$('#plotID').hide() //plot is initially hidden
 		$('#optionsID').hide() //options is initially hidden
 		$('#simulateID').hide() //options is initially hidden
@@ -221,13 +224,20 @@
 			socket.emit('startStreamButtonID', {data: ''});
 			//d = new Date();
 			//$("#myvideoimgID").attr("src", "http://192.168.1.60:8080/stream/video.mjpeg?"+d.getTime());
-			$("#myvideoimgID").removeAttr("src").attr("src", "http://192.168.1.60:8080/stream/video.mjpeg");
+			//$("#myvideoimgID").removeAttr("src").attr("src", "http://192.168.1.60:8080/stream/video.mjpeg");
 		});
 		$('#stopStreamButtonID').click(function(event) {        
 			socket.emit('stopStreamButtonID', {data: ''});
 			//d = new Date();
 			//$("#myvideoimgID").attr("src", "http://192.168.1.60:8080/stream/video.mjpeg?"+d.getTime());
-			$("#myvideoimgID").removeAttr("src").attr("src", "http://192.168.1.60:8080/stream/video.mjpeg");
+			//$("#myvideoimgID").removeAttr("src").attr("src", "http://192.168.1.60:8080/stream/video.mjpeg");
+		});
+
+		//sessionID form
+		$('form#sessionform').submit(function(event) {
+			sessionformDict = {sessionID: $('#sessionID').val()};
+			socket.emit('sessionform', sessionformDict);
+			return false;
 		});
 
 		//led1
@@ -313,49 +323,47 @@ $('#bigImgButtonID').click(function(event) {
 <body>
 <div class="page">
 
-	<i id="faSpinnerID" align="left" class="fa fa-circle-o-notch fa-2x"></i>	
-	<span id="spinnerTextID" style="font-size:24px;">
-	</span>
-	<div id="datetimeID" style="font-size:24px; float: right;">Not connected</div>
-	
-	<!--
-	Trial
-	<div id="isArmedID">Armed:</div>
-	-->
-
-	<!-- inline text then button
-	<span class="noborder" style="display: inline; float: right;">
-	<span id="datetimeID" style="font-size:24px;">xxx connected</span>
-	<button id="hideshowplotID" type="button"><i id="plotChevron" class="fa fa-question fa-2x" "></i></button>
-	</span>
-	-->
-	
-	<!-- <div id="videoStartedID">Recording:</div> -->
-
-
-
-
 	<TABLE>
 	<TR>
 	<TD>
-	<div id="elapsedTimeID" style="font-size:20px;">Elapsed Time (sec):</div>
+		<i id="faSpinnerID" align="left" class="fa fa-circle-o-notch fa-2x"></i>	
+		<span id="spinnerTextID" style="font-size:24px;"></span>	
 	</TD>
 	<TD>
-	<div id="numFramesID" style="font-size:20px;">Frame:</div>
+		<div id="datetimeID" style="font-size:20px;">Not connected</div>
+	</TD>
+	</TR>
+	<TR>
+	<TD>
+		<div id="elapsedTimeID" style="font-size:20px;">Elapsed (sec):</div>
+	</TD>
+	<TD>
+		<div id="numFramesID" style="font-size:20px;">Frame:</div>
 	</TD>
 	<TR>
 	<TD>
-	<div id="trialNumberID" style="font-size:20px;">Trial:</div>
+		<div id="trialNumberID" style="font-size:20px;">Trial:</div>
 	</TD>
 	<TD>
-	<div id="logFilePathID" style="font-size:14px;">File:</div>
+		<div id="logFilePathID" style="font-size:18px;">File:</div>
 	</TD>
 	</TR>
+	
+	<TR>
+	<TD>
+		<div id="actualSessionID" style="font-size:20px;">Session ID:</div>
+	</TD>
+	<TD>
+		<form id="sessionform" name="sessionform" method="POST" action="#">
+		<font size="4">Session ID</font> <input type="text" id="sessionID" name="sessionID" size="10">
+		<button type="submit" class="btn btn-secondary btn-xs" ng-disabled="sessionform.$invalid">Set</button>
+		</form>
+	</TD>
 	</TABLE>
 	
 	<BR>
 	<span id="armIsOnID" style="font-size:20px;">Arm: Off</span>
-	&nbsp;
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 	<button id="startArmButtonID" class="btn btn-success btn-md">
 	   <span class="glyphicon glyphicon-play"></span> Start Arm
 	</button>
@@ -396,8 +404,8 @@ $('#bigImgButtonID').click(function(event) {
 	<!-- LED SECTION -->
 	<BR>
 	<BR>
-	<span id="led1ID" style="font-size:20px;">LED1: Off</span>
-	&nbsp;
+	<span id="led1ID" style="font-size:20px;">LED 1: Off</span>
+	&nbsp;&nbsp;&nbsp;&nbsp;
 	<button id="led1OnButtonID" class="btn btn-primary btn-md">
 		<i class="fa fa-lightbulb-o fa-1x" aria-hidden="true"></i> On
 	</button>
@@ -410,8 +418,8 @@ $('#bigImgButtonID').click(function(event) {
 
 	<BR>
 	<BR>
-	<span id="led2ID" style="font-size:20px;">LED2: Off</span>
-	&nbsp;
+	<span id="led2ID" style="font-size:20px;">LED 2: Off</span>
+	&nbsp;&nbsp;&nbsp;&nbsp;
 	<button id="led2OnButtonID" class="btn btn-primary btn-md">
 		<i class="fa fa-lightbulb-o fa-1x" aria-hidden="true"></i> On
 	</button>
@@ -432,6 +440,7 @@ $('#bigImgButtonID').click(function(event) {
 	</div>
 		<div id="plotID">
 			<BR>
+			&nbsp;&nbsp;&nbsp;&nbsp;
 			<button id="plotlasttrialButtonID" class="btn btn-primary btn-sm">
 			  Plot Last Trial
 			</button>
@@ -445,18 +454,19 @@ $('#bigImgButtonID').click(function(event) {
 	<A HREF="http://cudmore.github.io/triggercamera/webhelp" target="_help"> <i class="fa fa-question fa-2x" "></i></A>
 	</div>
 	<div id="optionsID">
+		&nbsp;&nbsp;&nbsp;&nbsp;
 		<button id="reloadConfigButtonID" class="btn btn-primary btn-sm">
 		  Reload Configuration
 		</button>
 
 		<BR>
-		<TABLE>
+		<TABLE style="margin-left:18px">
 		<TR>
 			<TH>Camera</TH>
 			<TH>Pi System</TH>
 		</TR>
 		<TR>
-		<TD>
+		<TD style="vertical-align:top">
 			<!-- CAMERA -->
 			<div id="fpsID">fps:</div>
 			<div id="resolutionID">Resolution:</div>
@@ -482,8 +492,9 @@ $('#bigImgButtonID').click(function(event) {
 	<button id="hideshowsimulateID" type="button"><span id="simulateChevron" class="glyphicon glyphicon-chevron-up"></span> Simulate</button>
 	</div>
 	<div id="simulateID">
-		<label><input type="checkbox" id="simulateCheckboxID" value="">Simulate is on</label>
+		<!-- <label><input type="checkbox" id="simulateCheckboxID" value="">Simulate is on</label> -->
 
+		&nbsp;&nbsp;&nbsp;&nbsp;
 		<button id="runSimulationButtonID" class="btn btn-primary btn-sm">
 		  Run Simulation
 		</button>

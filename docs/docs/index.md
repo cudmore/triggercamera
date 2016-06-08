@@ -21,7 +21,7 @@ The Raspberry Pi is a low cost ($35) computer that runs Linux. In addition to US
 
 ## Software implementation
 
-The software provided here will run a Raspberry Pi camera as a slave to other devices already in place for an experiment. Once the camera is armed, it will continuously record a circular stream of video in memory. When a digital trigger is received, the the video will begin being saved to disk. In addition to saving the video after a trigger, the video before the trigger will also be saved. This has the distinct advantage of given you a record of what your animal was doing  before a trial was started. In many cases, 'bad trials' can be found because there was a lot of movement (or some other abberent event) before a trial began.
+The software provided here will run a Raspberry Pi camera as a slave to other devices already in place for an experiment. Once the camera is armed, it will continuously record a circular stream of video in memory. When a digital trigger is received, the video will begin being saved to disk. In addition to saving the video after a trigger, the video before the trigger will also be saved. This has the distinct advantage of given you a record of what your animal was doing  before a trial was started. In many cases, 'bad trials' can be found because there was a lot of movement (or some other abberent event) before a trial began.
 
 ## Video resolutions and FPS
 
@@ -41,6 +41,14 @@ The Raspberry Pi camera has the following resolutions and FPS. Set the resolutio
 
 The Raspberry Pi runs Linux and like other operating systems including Microsoft Windows and Mac OS it is not real time. There will always be unpredictable delays in the detection and generation of GPIO pulses. If the detection of a fast pulse or the timing of a pulse is critical for an experiment it is strongly suggested to use a more precise microcontroller like an Arduino.
 
+The Raspberry Pi camera is not a high-end camera. It records compressed video files, it does not record single frames to a video file. If you require a camera that captures individual frames, you should buy a high-end camera. 
+
+ - Saved video files are compressed with .h264
+ - Saved video files are split into two files (we will wrote code to combine them after a trial)
+ - Some frames will be late
+ - Some frames may be missed
+ - It is difficult to predict which frames will be late and/or missed
+ 
 See the [Analysis](index.md#analysis) section for example Python code to test the limits of this precision.
 
 <!--
@@ -353,6 +361,8 @@ By creating a system with a Raspberry Pi there are a large number of ways to qui
    
 
 # To Do
+ - Look at controlling the camera with RPi_Cam_Web_Interface
+ - Add basic camera controls for setting brightness. contrast, etc. etc.
  - **Done:** Implement a Flask homepage to provide buttons to control camera and feedback during a trial.
  - **Done:** Add control and interface for two LEDs (e.g. IR and white).
  - **Done:** Add a header to output files #fps=xxx;width=xxx;height=xxx
