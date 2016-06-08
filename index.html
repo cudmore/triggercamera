@@ -271,6 +271,12 @@
 </table>
 <h2 id="limitations">Limitations</h2>
 <p>The Raspberry Pi runs Linux and like other operating systems including Microsoft Windows and Mac OS it is not real time. There will always be unpredictable delays in the detection and generation of GPIO pulses. If the detection of a fast pulse or the timing of a pulse is critical for an experiment it is strongly suggested to use a more precise microcontroller like an Arduino.</p>
+<ul>
+<li>Video is split into two files (we will wrote code to combine them after a trial)</li>
+<li>Some frames will be late</li>
+<li>Some frames may be missed</li>
+<li>It is difficult to predict which frames will be late and/or missed</li>
+</ul>
 <p>See the <a href=".#analysis">Analysis</a> section for example Python code to test the limits of this precision.</p>
 <!--
 ## TTL versus GPIO
@@ -599,6 +605,8 @@ ipython notebook
 </ul>
 <h1 id="to-do">To Do</h1>
 <ul>
+<li>Look at controlling the camera with RPi_Cam_Web_Interface</li>
+<li>Add basic camera controls for setting brightness. contrast, etc. etc.</li>
 <li><strong>Done:</strong> Implement a Flask homepage to provide buttons to control camera and feedback during a trial.</li>
 <li><strong>Done:</strong> Add control and interface for two LEDs (e.g. IR and white).</li>
 <li><strong>Done:</strong> Add a header to output files #fps=xxx;width=xxx;height=xxx</li>
@@ -655,5 +663,5 @@ ipython notebook
 
 <!--
 MkDocs version : 0.15.3
-Build Date UTC : 2016-06-07 12:05:40.339170
+Build Date UTC : 2016-06-08 11:54:12.220027
 -->
