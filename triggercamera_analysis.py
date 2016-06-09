@@ -12,7 +12,7 @@ import ntpath #this shuod get paths on windows?
 
 class triggercamera_analysis():
 	def __init__(self):
-		#print 'construct triggercameraAnalysis'
+
 		self.folder = '/home/pi/video/'
 		self.list = ''
 		self.dbfile = ''

@@ -23,15 +23,14 @@ http://server/timelapseoff
 print 'triggercamera_app starting import of libraries'
 
 import time, datetime, platform, math, re
-#import pprint #to print class members
+#import logging
 from threading import Thread
 from flask import Flask, jsonify, send_file, redirect, render_template
 from flask.ext.socketio import SocketIO, emit
 import eventlet
 #import json
 
-print '\timport triggercamera and triggercamera_analysis'
-
+print '\timport triggercamera and triggercamera_analysis (please wait)'
 import triggercamera
 import triggercamera_analysis
 
@@ -46,9 +45,6 @@ socketio = SocketIO(app, async_mode='eventlet')
 
 print '\tinstantiating triggercamera.TriggerCamera()'
 v=triggercamera.TriggerCamera()
-#v.ArmTrigger()
-#v.startArm()
-
 tca = triggercamera_analysis.triggercamera_analysis()
 
 namespace = ''

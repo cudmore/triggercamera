@@ -257,6 +257,7 @@
 
 		$('#plotlasttrialButtonID').click(function(event) {        
 			filepath = '';
+			plotSpinner(1);
 			socket.emit('plotTrialButtonID', {data: ''});
 		});
 		
@@ -285,6 +286,9 @@
 			socket.emit('simulateCheckbox', {data: ''});
 		});
 
+//set the img src to servers ip
+$("#myvideoimgID").attr("src","http://' + document.domain + ':8080/stream/video.mjpeg'");
+
 $('#smallImgButtonID').click(function(event) {        
 	$('#myvideoimgID').css('width','320');
 	$('#myvideoimgID').css('height','240');
@@ -293,6 +297,20 @@ $('#bigImgButtonID').click(function(event) {
 	$('#myvideoimgID').css('width','640');
 	$('#myvideoimgID').css('height','480');
 });
+
+function plotSpinner(start) {
+	if (start) {
+		console.log("plotSpinner start")
+		//$("body").css("cursor", "progress");
+		$('#faSpinnerPlotID').removeClass()
+		$('#faSpinnerPlotID').addClass('redcolor fa fa-circle-o-notch  fa-1x fa-spin')
+	} else {
+		//console.log("plotSpinner stop")
+		$("body").css("cursor", "default");
+		$('#faSpinnerPlotID').removeClass()
+		$('#faSpinnerPlotID').addClass('blackcolor fa fa-circle-o-notch  fa-1x')
+	}
+}
 
 		namespace = '';
         var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
@@ -307,6 +325,7 @@ $('#bigImgButtonID').click(function(event) {
 
 		socket.on('lastTrialDiv', function(msg) {
 			console.log('lastTrialDiv received')
+			plotSpinner(0);
 			$('#lastTrialPlotID').html(msg.plotDiv);				
 		});
 
@@ -444,6 +463,7 @@ $('#bigImgButtonID').click(function(event) {
 			<button id="plotlasttrialButtonID" class="btn btn-primary btn-sm">
 			  Plot Last Trial
 			</button>
+			<i id="faSpinnerPlotID" class="fa fa-circle-o-notch fa-1x"></i>		
 			<div id="lastTrialPlotID"></div>
 		</div>
 		

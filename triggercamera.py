@@ -41,8 +41,6 @@ import subprocess
 
 class TriggerCamera(threading.Thread):
 	def __init__(self):
-		print '==========================='
-		print 'TriggerCamera() constructor'
 		threading.Thread.__init__(self)
 
 		self.version = 0.1 #20160607
@@ -278,14 +276,14 @@ class TriggerCamera(threading.Thread):
 		if self.isArmed:
 			print "\tERROR: Can not start stream while armed"
 		elif not self.streamIsRunning:
-			cmd = '/home/pi/Sites/triggercamera/stream_start.sh'
+			cmd = './stream_start.sh'
 			subprocess.Popen(cmd, shell=True, executable='/bin/bash')
 			self.streamIsRunning = 1
 		
 	def stopVideoStream(self):
 		print 'triggercamera.stopVideoStream()'
 		if self.streamIsRunning:
-			cmd = '/home/pi/Sites/triggercamera/stream_stop.sh'
+			cmd = './stream_stop.sh'
 			subprocess.Popen(cmd, shell=True, executable='/bin/bash')
 			self.streamIsRunning = 0
 		
