@@ -225,6 +225,8 @@ sudo reboot          #reboot
 <p>Once netatalk is installed, the Raspberry will show up in the Mac Finder 'Shared' section</p>
 <pre><code>sudo apt-get install netatalk
 </code></pre>
+<p>When you mount the pi on OSX, it will mount as 'Home Directory' and the space ' ' will cause problems. Change the name ot something like 'pi3'.</p>
+<p>See <a href="http://blog.cudmore.io/post/2015/06/07/Changing-default-mount-in-Apple-File-Sharing/">this blog post</a> to change the name of the mount point from 'Home Directory'.    </p>
 <h2 id="make-the-pi-send-email-with-ip-on-boot">Make the Pi send email with IP on boot</h2>
 <p>Create an executable python script to send en email with IP. An example <a href="https://github.com/cudmore/cudmore.github.io/blob/master/_site/downloads/startup_mailer.py">startup_mailer.py</a></p>
 <pre><code>mkdir code
