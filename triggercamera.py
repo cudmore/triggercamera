@@ -276,8 +276,11 @@ class TriggerCamera(threading.Thread):
 		if self.isArmed:
 			print "\tERROR: Can not start stream while armed"
 		elif not self.streamIsRunning:
+			#see: http://stackoverflow.com/questions/5631624/how-to-get-exit-code-when-using-python-subprocess-communicate-method
 			cmd = './stream_start.sh'
-			subprocess.Popen(cmd, shell=True, executable='/bin/bash')
+			child = subprocess.Popen(cmd, shell=True, executable='/bin/bash', stderr=subprocess.PIPE)
+			stderr = child.communicate()[1]
+			print './stream_start.sh responded with:', stderr
 			self.streamIsRunning = 1
 		
 	def stopVideoStream(self):

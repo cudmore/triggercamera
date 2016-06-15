@@ -102,7 +102,11 @@ Selecting `3 Boot Options -> Console` is important. It seems Raspbian ships with
 Once netatalk is installed, the Raspberry will show up in the Mac Finder 'Shared' section
 
     sudo apt-get install netatalk
-    
+
+When you mount the pi on OSX, it will mount as 'Home Directory' and the space ' ' will cause problems. Change the name to something like 'pi3'.
+
+See [this blog post][afpmountpoint] to change the name of the mount point from 'Home Directory'.    
+
 ## Make the Pi send email with IP on boot
 
 Create an executable python script to send en email with IP. An example [startup_mailer.py][startupmailer]
@@ -134,7 +138,34 @@ Now, when pi boots it will send an email with it's ip. Try it with
 
     sudo reboot
 
+# Run the ./start.sh script from within a [screen][screen] session.
+
+Running the python server with ./start.sh needs to be done within a **screen** session. Otherwise, the code will exit when your ssh session exits.
+
+## Install screen
+
+    sudo apt-get install screen
+    
+## Run screen and then ./start.sh
+
+    screen #puts you in a screen session
+    ./start.sh
+    #exit screen with ctrl+a then d
+    #the python code will continue to run
+
+To re-enter the screen session the next time you login use `screen -r`.
+
+    screen -r
+
+# To kill/quit the server
+
+Kill the python session with `ctrl+c ctrl+c`. Or from any command prompt, kill all python scripts with
+
+    pkill python
+    
 [downloadraspian]: https://www.raspberrypi.org/downloads/
 [installguide]: https://www.raspberrypi.org/documentation/installation/installing-images/README.md
 [mswindows]: http://www.circuitbasics.com/raspberry-pi-basics-setup-without-monitor-keyboard-headless-mode/
 [startupmailer]: https://github.com/cudmore/cudmore.github.io/blob/master/_site/downloads/startup_mailer.py
+[afpmountpoint]: http://blog.cudmore.io/post/2015/06/07/Changing-default-mount-in-Apple-File-Sharing/
+[screen]: http://raspi.tv/2012/using-screen-with-raspberry-pi-to-avoid-leaving-ssh-sessions-open

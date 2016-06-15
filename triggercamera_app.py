@@ -28,6 +28,7 @@ from threading import Thread
 from flask import Flask, jsonify, send_file, redirect, render_template
 from flask.ext.socketio import SocketIO, emit
 import eventlet
+import subprocess # to get ip address
 #import json
 
 print '\timport triggercamera and triggercamera_analysis (please wait)'
@@ -265,12 +266,23 @@ def get_index():
 	#resp = genericresponse()
 	return render_template('index.html') #, resp=resp)
 
+def whatismyip():
+	arg='ip route list'
+	p=subprocess.Popen(arg,shell=True,stdout=subprocess.PIPE)
+	data = p.communicate()
+	split_data = data[0].split()
+	ipaddr = split_data[split_data.index('src')+1]
+	return ipaddr
+	
 #start the app/webserver
 if __name__ == "__main__":
 	try:
 		print '\ttriggercamera_app::__main__'
 		#app.run(host='0.0.0.0', port=5010, use_reloader=True, debug=True)
-		socketio.run(app, host='0.0.0.0', port=5010, use_reloader=False)
+		# this works for lan ip but shows 0.0.0.0 in std out
+		#socketio.run(app, host='0.0.0.0', port=5010, use_reloader=False)
+		socketio.run(app, host=whatismyip(), port=5010, use_reloader=False)
+		print 'xxx here'
 	except:
 		print 'triggercamera_app EXITING AND AT LAST LINE'
 		raise
