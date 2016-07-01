@@ -152,6 +152,8 @@ def myplotlyplot(filePath,output_type):
 
 	return fileordiv
 	
+'''
 if __name__ == '__main__':
 	file = 'data/20160306_211227_t4_d.txt'
 	myplotlyplot(file)
+'''

@@ -1,14 +1,14 @@
 #20160307
 
 import plotly
-print 'plotly.__version__=', plotly.__version__  # version >1.9.4 required
+#print 'plotly.__version__=', plotly.__version__  # version >1.9.4 required
 import plotly.graph_objs as go
 
 import pandas
 import numpy as np
-import os.path
+import os
 import glob
-import ntpath #this shuod get paths on windws?
+#import ntpath #this shuod get paths on windws?
 
 class treadmillAnalysis():
 	def __init__(self):
@@ -236,9 +236,11 @@ class treadmillAnalysis():
 		return fileordiv
 		
 		
+'''
 if __name__ == '__main__':
 	folder = '/home/cudmore/Sites/treadmill/v1/data/'
 
 	t = treadmillAnalysis()
 	t.assignfolder(folder)
 	print t.getlist()
+'''

@@ -4,7 +4,7 @@
 #
 from flask import Flask, abort, render_template, send_file, request
 from flask.ext.socketio import SocketIO, emit
-from flaskext.markdown import Markdown
+#from flaskext.markdown import Markdown
 
 import random # testing
 import os, time, random
@@ -29,7 +29,7 @@ app.config['SECRET_KEY'] = 'secret!'
 app.debug = True
 app.config['DATA_FOLDER'] = 'data/'
 
-Markdown(app, extensions=['fenced_code'])
+#Markdown(app, extensions=['fenced_code'])
 
 #socketio = SocketIO(app)
 socketio = SocketIO(app, async_mode='eventlet')

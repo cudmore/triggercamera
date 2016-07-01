@@ -28,8 +28,8 @@ import time
 import os.path
 from threading import Thread
 
-import eventlet
-eventlet.monkey_patch()
+#import eventlet
+#eventlet.monkey_patch()
 
 try:
 	import picamera
