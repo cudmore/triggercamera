@@ -129,6 +129,16 @@
             <li><a href="#make-the-pi-send-email-with-ip-on-boot">Make the Pi send email with IP on boot</a></li>
         
     
+        <li class="main "><a href="#run-the-startsh-script-from-within-a-screen-session">Run the ./start.sh script from within a screen session.</a></li>
+        
+            <li><a href="#install-screen">Install screen</a></li>
+        
+            <li><a href="#run-screen-and-then-startsh">Run screen and then ./start.sh</a></li>
+        
+    
+        <li class="main "><a href="#to-killquit-the-server">To kill/quit the server</a></li>
+        
+    
     </ul>
 </div></div>
                 <div class="col-md-9" role="main">
@@ -250,6 +260,24 @@ gmail_password = 'ENTER_YOUR_PASSWORD_HERE'
 </code></pre>
 <p>Now, when pi boots it will send an email with it's ip. Try it with</p>
 <pre><code>sudo reboot
+</code></pre>
+<h1 id="run-the-startsh-script-from-within-a-screen-session">Run the ./start.sh script from within a <a href="http://raspi.tv/2012/using-screen-with-raspberry-pi-to-avoid-leaving-ssh-sessions-open">screen</a> session.</h1>
+<p>Running the python server with ./start.sh needs to be done within a <strong>screen</strong> session. Otherwise, the code will exit when your ssh session exits.</p>
+<h2 id="install-screen">Install screen</h2>
+<pre><code>sudo apt-get install screen
+</code></pre>
+<h2 id="run-screen-and-then-startsh">Run screen and then ./start.sh</h2>
+<pre><code>screen #puts you in a screen session
+./start.sh
+#exit screen with ctrl+a then d
+#the python code will continue to run
+</code></pre>
+<p>To re-enter the screen session the next time you login use <code>screen -r</code>.</p>
+<pre><code>screen -r
+</code></pre>
+<h1 id="to-killquit-the-server">To kill/quit the server</h1>
+<p>Kill the python session with <code>ctrl+c ctrl+c</code>. Or from any command prompt, kill all python scripts with</p>
+<pre><code>pkill python
 </code></pre></div>
             
         </div>
