@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+</head>
+
+<body>
+
+		<button id="startarduinoButtonID">
+		  <i class="fa fa-play fa-2x"></i>
+		</button>
+		<button id="stoparduinoButtonID">
+		  <i class="fa fa-stop fa-2x"></i>
+		</button>
+	<BR>
+	<div id="serialDataID">xxx</div>
+	<BR>
+	<div id="sketchContainerID"></div>
+
+	<!-- JavaScript files -->
+	 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.4.8/p5.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
+	<script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
+
+	<script src="static/grafica.min.js"></script>
+
+	<!-- <script src="multiplePlots.js"></script> -->
+	<script src="js/mygraficaplot.js"></script>
+	
+	<link rel="stylesheet" href="static/Font-Awesome-master/css/font-awesome.min.css">
+
+	 <script type="text/javascript">
+	 
+            namespace = ''; // change to an empty string to use the global namespace
+            var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
+            //var socket = io.connect('http://192.168.1.200:5010');
+		
+			$("#startarduinoButtonID").click(function() {
+				socket.emit('startarduinoButtonID', {data: ''});
+				//$("#ex1").slider("enable");
+                return false;
+			});
+
+			$("#stoparduinoButtonID").click(function() {
+				socket.emit('stoparduinoButtonID', {data: ''});
+				//$("#ex1").slider("enable");
+                return false;
+			});
+
+            socket.on('serialdata', function(msg) {
+                console.log('grafica.html received serialdata:' + msg.data);
+                $('#serialDataID').empty().append(msg.data);
+				p5Sketch.myupdate(msg.data)
+            });
+
+		var p5Sketch;
+		p5Sketch = new p5(mygraficaplot, "sketchContainerID");
+
+		
+	</script>
+	
+</body>
+
+</html>

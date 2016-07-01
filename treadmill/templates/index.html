@@ -1,0 +1,235 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Treadmill Experiment</title>
+    <script type="text/javascript" src="static/jquery-2.2.1.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
+
+
+    <script src="http://code.highcharts.com/highcharts.js"></script> 
+
+	<link rel="stylesheet" href="static/Font-Awesome-master/css/font-awesome.min.css">
+	<link rel="stylesheet" href="static/style.css">
+
+	<!--
+	<script rel="stylesheet" src="static/jquery.bootstrap-touchspin.min.js"></script> 
+	<link rel="stylesheet" href="static/jquery.bootstrap-touchspin.min.css">
+	-->
+	
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+	<script rel="stylesheet" src="static/bootstrap-slider.min.js"></script> 
+	<link rel="stylesheet" href="static/bootstrap-slider.min.css">
+
+    <script type="text/javascript" charset="utf-8">
+		$(document).ready(function(){
+
+			//all interface .js code
+			$.getScript('js/index.js');
+
+			//set defaults in form
+			$('#numEpochID').attr("value", "{{ treadmill.trial['numEpoch'] }}");
+			$('#epochDurID').attr("value", "{{ treadmill.trial['epochDur'] }}");
+
+			$('#preDurID').attr("value", "{{ treadmill.trial['preDur'] }}");
+			$('#postDurID').attr("value", "{{ treadmill.trial['postDur'] }}");
+			$('#numPulseID').attr("value", "{{ treadmill.trial['numPulse'] }}");
+			$('#pulseDurID').attr("value", "{{ treadmill.trial['pulseDur'] }}");
+			//
+			//motorOn
+			var useMotor = "{{treadmill.trial['useMotor']}}"; //{motorOn, motorLocked, motorFree}
+			//console.log('useMotor=', useMotor)
+			var $radios = $('input:radio[name=motorRadio]');
+			if (useMotor=='motorOn') {
+				$radios.filter('[value=motorOn]').prop('checked', true);
+			} else if (useMotor=='motorLocked') {
+				$radios.filter('[value=motorLocked]').prop('checked', true);
+			} else if (useMotor=='motorFree') {
+				$radios.filter('[value=motorFree]').prop('checked', true);
+			}
+						
+			$('#motorDelID').attr("value", "{{ treadmill.trial['motorDel'] }}");
+			$('#motorDurID').attr("value", "{{ treadmill.trial['motorDur'] }}");
+			$('#motorSpeedID').attr("value", "{{ treadmill.trial['motorSpeed'] }}");
+
+		}); //$(document).ready(function(){
+    </script>
+<!-- -->
+
+</head>
+<body>
+<div class="page">
+
+ 	<div style="font-size:1.5em; float: right;">
+ 	<A HREF="data" target="data"><i class="fa fa-database fa-1x" style="color:black"></i></A> 
+ 	<A HREF="analysis" target="analysis2"><i class="fa fa-line-chart fa-1x" style="color:black"></i></A> 
+    <A HREF="help" target="help"><i class="fa fa-question fa-1x" style="color:black"></i></a>
+	</div>
+ 	
+		<button id="startarduinoButtonID" class="btn btn-success btn-sm">
+		  <span class="glyphicon glyphicon-play"></span> Start Trial
+		</button>
+		<button id="stoparduinoButtonID" class="btn btn-danger btn-sm">
+		  <span class="glyphicon glyphicon-stop"></span> Stop Trial
+		</button>
+
+		<i id="faSpinnerID" class="fa fa-circle-o-notch fa-2x"></i>		
+
+<!-- -->
+    <BR>
+	<!-- <button id="hideshowchart"><i class="fa fa-chevron-down fa-1x"></i> Trial Plot</button> -->
+    <div id="chart" style="width:100%; height:200px;"></div>
+<!-- -->
+	
+	<table>
+	<tr>
+		<td style="width:200px; font-size:1.2em;">
+		<div id="currentAnimalID"></div>
+		</td>
+		<td style="width:130px; font-size:1.2em;">
+		<div id="currentTrialNumberID"></div>
+		</td>
+		<td style="width:130px; font-size:1.2em;">
+		<div id="currentEpochNumberID"></div>
+		</td>
+		<!--
+		<td style="width:300px; font-size: 1.2em;">
+		<div id="currentTrialFileID"></div>
+		</td>
+		-->
+	</tr>
+	</table>
+
+<H3>Stimulus</H3>
+		<form id="animalform" name="animalform" method="POST" action="#">
+		Animal ID <input type="text" id="animalID" name="animalID" ng:pattern="/^[a-zA-Z0-9]*$/" required>
+		<button type="submit" class="btn btn-secondary btn-xs" ng-disabled="animalform.$invalid">Set</button>
+		</form>
+
+		<!-- -->
+		<table class="trialformtable">
+		<tr>
+		<td>
+				<label class="ardVarName">Num Epoch&nbsp;&nbsp;&nbsp;</label>
+				<input class="ardinput" type="number" id="numEpochID" ng:validate="integer" min="1" required>
+			   <BR>
+		</td>
+		<td>
+				<label class="ardVarName">Epoch Dur (ms)&nbsp;</label>
+				<input class="ardinput" type="number" id="epochDurID" ng:validate="integer" min="0" required>
+			   <BR>
+		</td>
+		</tr>
+		<tr>
+			<td>
+
+				<label class="ardVarName">Pre Dur (ms)&nbsp;&nbsp;&nbsp;</label>
+				<input class="ardinput" type="number" id="preDurID" ng:validate="integer" min="0" required>
+			   <BR>
+
+				<label class="ardVarName">Post Dur (ms)&nbsp;</label>
+				<input class="ardinput" type="number" id="postDurID" ng:validate="integer" min="0" required>
+			   <BR>
+
+				<label class="ardVarName">Num Pulses&nbsp;&nbsp;&nbsp;&nbsp;</label>
+				<input class="ardinput" type="number" id="numPulseID" ng:validate="integer" min="0" required>
+			   <BR>
+
+				<label class="ardVarName">Pulse Dur (ms)</label>
+				<input class="ardinput" type="number" id="pulseDurID" ng:validate="integer" min="0" required>
+			</td>
+
+
+			<td> 
+
+				Motor 
+					<input type="radio" name="motorRadio" id="motorRadio1" value="motorOn"> On
+				<input type="radio" name="motorRadio" id="motorRadio2" value="motorLocked"> Locked
+				<input type="radio" name="motorRadio" id="motorRadio3" value="motorFree"> Free
+			   <BR>
+			   
+				<label class="ardVarName">Motor Del (ms)</label>
+				<input class="ardinput" type="number" id="motorDelID" ng:validate="integer" min="0" required>
+			   <BR>
+			   
+				<label class="ardVarName">Motor Dur (ms)</label>
+				<input class="ardinput" type="number" id="motorDurID" ng:validate="integer" min="0" required>
+			   <BR>
+			   
+				<label class="ardVarName">Motor Speed&nbsp;&nbsp;&nbsp;</label>
+				<input class="ardinput" type="number" id="motorSpeedID" ng:validate="integer" min="0" required>
+
+			</td>
+		</tr>
+		</table>
+		<form id="trialform" name="trialform" method="POST" action="#">
+			<button type="button" id="hideshowtrialplotdiv" class=" btn btn-secondary btn-xs"><i class="fa fa-chevron-down fa-1x"></i></button>
+			<button type="submit" class="btn btn-success btn-xs" ng-disabled="trialform.$invalid">Upload To Arduino <i class="fa fa-arrow-up"></i></button>
+			<i id="faSpinnerArduinoID" class="fa fa-circle-o-notch fa-1x"></i>		
+		</form>
+		<!-- -->	
+    
+	<div class="trialPlotDivID" id="trialPlotDivID"></div>
+
+<h3></h3>
+	<button id="hideshowserverstate" class=" btn btn-secondary btn-xs"><i class="fa fa-chevron-down fa-1x"></i> Server</button>
+    <span id="serverDateTimeID"></span>
+	<BR>
+	<BR>
+	<div id="serverstate" style="width:200px; height:200px;">
+		<div id="currentAnimalID"></div>
+		<div id="savePathID"></div>
+		<div id="currentTrialNumberID"></div>
+		<div id="currentEpochNumberID"></div>
+		<div id="currentDurID"></div>
+		<div id="currentUseMotorID"></div>
+		<div id="currentMotorDelID"></div>
+		<div id="currentMotorDurID"></div>
+		<div id="log"></div>
+	</div>
+
+	<button id="hideshowseriallog" class="buttonCallback btn btn-secondary btn-xs"><i class="fa fa-chevron-down fa-1x"></i> Serial Log</button>
+	<button id="printArduinoStateID" class="buttonCallback btn btn-secondary btn-xs">Get Arduino State</button>
+	<button id="clearSerialLogID" class="buttonCallback btn btn-secondary btn-xs">Clear</button>
+    <span id="newDataID"></span>
+    <BR>
+    <div class="scroll" id="serialDataID"></div>
+
+	<BR>
+	<button id="hideshowutility" class="buttonCallback btn btn-secondary btn-xs"><i class="fa fa-chevron-down fa-1x"></i> Utility</button>
+	<BR>
+	<div class="utility" id="utilityID">
+		Serial Port <input type="text" id="serialPortTextID" required>
+		<button id="serialPortButtonID" class="buttonCallback btn btn-secondary btn-xs">Set</button>
+		
+		<!-- <button id="emptySerialID" class="buttonCallback">Empty Serial Buffer</button> -->
+		<BR>
+		<button id="checkserialportID" class="buttonCallback btn btn-secondary btn-xs">Check Serial Port</button>
+		<button id="arduinoVersionID" class="buttonCallback btn btn-secondary btn-xs">Arduino code version</button>
+
+	    <!-- <A HREF="p5">p5</a> -->
+	    <!-- <A HREF="grafica">grafica</a> -->
+	</div>
+
+<BR>
+<p>
+<button id="led1On" class="btn btn-success btn-xs">On <i class="fa fa-lightbulb-o"></i></button>
+<button id="led1Off" class="btn btn-secondary btn-xs">Off</button>
+<input type="text" class="span2" value="" data-slider-min="0" data-slider-max="255" data-slider-step="1" data-slider-value="128" data-slider-id="led1Color" id="led1ID" data-slider-tooltip="hide"/>
+</p>
+<p>
+<button id="led2On" class="btn btn-danger btn-xs">On <i class="fa fa-lightbulb-o"></i></button>
+<button id="led2Off" class="btn btn-secondary btn-xs">Off</button>
+<input type="text" class="span2" value="" data-slider-min="0" data-slider-max="255" data-slider-step="1" data-slider-value="128" data-slider-id="led2Color" id="led2ID" data-slider-tooltip="hide"/>
+</p>
+
+</div>
+</body>
+</html>

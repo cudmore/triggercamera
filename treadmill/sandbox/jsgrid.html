@@ -1,0 +1,124 @@
+<head>
+  <!-- Plotly.js -->
+   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+	<link type="text/css" rel="stylesheet" href="js/jsgrid/jsgrid.min.css" />
+	<link type="text/css" rel="stylesheet" href="js/jsgrid/jsgrid-theme.min.css" />
+    
+	<script type="text/javascript" src="js/jsgrid/jsgrid.min.js">
+</script>
+
+</head>
+
+<body>
+  <!-- <div id="myLinePlot" style="width: 480px; height: 400px;"></div> -->
+  <div id="myScatter" style="width: 400; height: 400px;"></div>
+	<div id="jsGrid" style="width: 100%; height: 250px;"></div>
+      
+  <script>
+  <!-- ENTER JAVASCRIPT CODE HERE -->
+  
+  function makeplot() {
+ 	var fileName = 'a153_hs1_tp0.csv'
+ 	Plotly.d3.csv(fileName, function(data){ processData(data) } );
+ 	//Plotly.d3.csv("https://raw.githubusercontent.com/plotly/datasets/master/2014_apple_stock.csv", function(data){ processData(data) } );
+
+	};
+
+	function processData(allRows) {
+
+		console.log(allRows);
+		var x = [], y = [], standard_deviation = [];
+
+		for (var i=0; i<allRows.length; i++) {
+			row = allRows[i];
+			//console.log(row);
+			//x.push( row['AAPL_x'] );
+			//y.push( row['AAPL_y'] );
+			x.push( row['x'] );
+			y.push( row['y'] );
+		}
+		//console.log( 'X',x, 'Y',y, 'SD',standard_deviation );
+	
+		//makePlotly( x, y, standard_deviation ); //plots a line plot
+	
+		myscatter(x,y);
+	
+		myjsGrid(allRows);
+	}
+
+//from https://plot.ly/javascript/line-and-scatter/
+function myscatter(xData,yData){
+  var trace1 = {
+	x: xData,
+	y: yData,
+	mode: 'markers',
+	type: 'scatter',
+	name: 'Team A',
+	text: ['A-1', 'A-2', 'A-3', 'A-4', 'A-5'],
+	marker: { size: 12 }
+  };
+
+	//var data = [ trace1, trace2 ];
+	var data = [ trace1 ];
+
+	var layout = {
+	  //xaxis: {
+		//range: [ 0.75, 5.25 ]
+	  //},
+	  //yaxis: {
+		//range: [0, 8]
+	  //},
+	  title:'Data Labels Hover'
+	};
+
+	Plotly.newPlot('myScatter', data, layout);
+
+}
+
+//plot a line plot
+function makePlotly( x, y, standard_deviation ){
+	var plotDiv = document.getElementById("plot");
+	var traces = [{
+		x: x, 
+		y: y
+	}];
+
+	Plotly.newPlot('myLinePlot', traces, 
+		{title: 'Plotting CSV data from AJAX call'});
+};
+  makeplot();
+  
+//http://js-grid.com/getting-started/
+function myjsGrid(allRows) {
+	$("#jsGrid").jsGrid({
+	    width: "100%",
+	    height: "400px",
+	 
+	    //filtering: true,
+	    //editing: true,
+	    sorting: true,
+	    //paging: true,
+	 
+	    data: allRows,
+	 
+	    //idx,shit,x,y,z,edgeList
+		fields: [
+	        //{ name: "idx", type: "text", width: 150 },
+	        { name: "idx", type: "number", width: 40 },
+	        { name: "x", type: "number", width: 40 },
+	        { name: "y", type: "number", width: 40 },
+	        { name: "z", type: "number", width: 40 },
+	        { name: "edgeList", type: "string", width: 50 },
+	        //{ name: "x", type: "text", width: 200 },
+	        //{ name: "y", type: "select", items: db.countries, valueField: "Id", textField: "Name" },
+	        //{ name: "z", type: "checkbox", title: "Is Married", sorting: false },
+	        //{ type: "control" }
+	    ]
+	});
+}
+
+  </script>
+</body>

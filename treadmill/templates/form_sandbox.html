@@ -1,0 +1,108 @@
+<html>
+
+<head>
+
+    <script type="text/javascript" src="static/jquery-2.2.1.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
+
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+	
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+	<link rel="stylesheet" href="static/style.css">
+
+
+    <script type="text/javascript" charset="utf-8">
+    $(document).ready(function(){
+
+		var namespace = ''; // change to an empty string to use the global namespace
+
+		// the socket.io documentation recommends sending an explicit package upon connection
+		// this is specially important when using the global namespace
+		console.log('index.html is creating socket');
+		var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
+	
+		// event handler for new connections
+		socket.on('connect', function() {
+			socket.emit('my event', {data: 'I\'m connected!'});
+		});
+
+		$("ardinput").attr({
+			"min" : 0          // values (or variables) here
+    	});
+
+		$('form#trialform').submit(function(event) {
+			trialFormDict = {
+				preDur: $('#preDurID').val(),
+				postDur: $('#postDurID').val(),
+				numPulses: $('#numPulsesID').val(),
+				pulseDur: $('#pulseDurID').val(),
+				//useMotor = {motorOn, motorLocked, motorFree}
+				useMotor: $('input[name=motorRadio]:checked', '#trialform').val(),
+				motorDel: $('#motorDelID').val(),
+				motorDur: $('#motorDurID').val(),
+				motorSpeed: $('#motorSpeedID').val()
+			};
+			console.log('index.html is sending trialform:' + trialFormDict);
+			//socket.emit('trialform', trialFormDict);
+			return false;
+		});
+	}); //document ready 
+	</script>
+</head>
+
+
+<body>
+
+<!-- -->
+<form id="trialform" name="trialform" method="POST" action="#">
+<table class="trialformtable">
+<tr>
+	<td>
+	    <label class="ardVarName">Pre Dur (ms)&nbsp;&nbsp;&nbsp;</label>
+	    <input class="ardinput" type="number" id="preDurID" ng:validate="integer" min="0" required>
+
+	   <BR>
+	    <label class="ardVarName">Post Dur (ms)&nbsp;</label>
+	    <input class="ardinput" type="number" id="postDurID" ng:validate="integer" min="0" required>
+
+	   <BR>
+	    <label class="ardVarName">Num Pulses&nbsp;&nbsp;&nbsp;&nbsp;</label>
+	    <input class="ardinput" type="number" id="numPulsesID" ng:validate="integer" min="0" required>
+
+	   <BR>
+	    <label class="ardVarName">Pulse Dur (ms)</label>
+	    <input class="ardinput" type="number" id="pulseDurID" ng:validate="integer" min="0" required>
+	</td>
+
+	<td>
+		Motor 
+		<input type="radio" name="motorRadio" id="motorRadio1" value="motorOn"> On
+		<input type="radio" name="motorRadio" id="motorRadio2" value="motorLocked"> Locked
+		<input type="radio" name="motorRadio" id="motorRadio3" value="motorFree"> Free
+
+	   <BR>
+	    <span class="ardVarName">Motor Del (ms)</span>
+	    <input class="ardinput" type="number" id="motorDelID" ng:validate="integer" min="0" required>
+
+	   <BR>
+	    <span class="ardVarName">Motor Dur (ms)</span>
+	    <input class="ardinput" type="number" id="motorDurID" ng:validate="integer" min="0" required>
+
+	   <BR>
+	    <span class="ardVarName">Motor Speed&nbsp;&nbsp;&nbsp;</span>
+	    <input class="ardinput" type="number" id="motorSpeedID" ng:validate="integer" min="0" required>
+
+	</td>
+</tr>
+</table>
+    <button type="submit" class="btn btn-xs" ng-disabled="trialform.$invalid">Upload To Arduino</button>
+</form>
+
+</body>
+</html>

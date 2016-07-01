@@ -1,0 +1,7 @@
+eventlet>=0.18.4
+Flask>=0.10.1
+Flask-Markdown>=0.3
+Flask-SocketIO>=1.0
+platformio>=2.8.5
+plotly>=1.9.6
+pyserial>=3.0.1

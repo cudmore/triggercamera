@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.4.8/p5.min.js"></script>
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.4.8/addons/p5.dom.js"></script>
+
+	<script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
+
+ <script type="text/javascript">
+	var inString = '';
+        $(document).ready(function(){
+            //namespace = '/test'; // change to an empty string to use the global namespace
+            namespace = ''; // change to an empty string to use the global namespace
+
+            // the socket.io documentation recommends sending an explicit package upon connection
+            // this is specially important when using the global namespace
+            var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
+		
+            socket.on('newdata', function(msg) {
+            	//console.log('a)' + msg.data);
+                $('#newDataID').empty().append(msg.data);
+            });
+
+            socket.on('temperatureUpdate', function(msg) {
+            	//console.log('a)' + msg.data);
+                //$('#newDataID').empty().append(msg.data);
+			    inString = msg; // used in draw() to call graphData(inString)
+			    //print(msg.x);
+            });
+            
+            socket.on('serialdata', function(msg) {
+                console.log(msg);
+                $('#serialDataID').empty().append(msg);
+            });
+            socket.on('serverUpdate', function(msg) {
+                console.log(msg);
+                $('#serverTimeID').empty().append(msg);
+            });
+
+		});
+		 
+	// Author: Robert Cudmore
+	// Date: 20160214
+	// Web: http://robertcudmore.org
+	// Purpose:
+	//	(1) connect to a node WebSocketServer via a WebSocket
+	//	(2) receive data from server and (a) update html DOM elements and (b) plot data with p5.js
+
+	//var inString = '';
+	var inData;       // for incoming serial data
+	var xPos = 0;     // x position of the graph
+	
+	var text;     // variable for the text div you'll create
+	//var socket = new WebSocket("ws://192.168.1.200:8081");
+ 
+	function setup() {
+  		// The socket connection needs two event listeners:
+   		//socket.onopen = socket_on_open;
+   		//socket.onclose = socket_on_close;
+   		//socket.onmessage = socket_on_data; //message received from WebSocket server 
+   		//socket.onerror = socket_on_error;
+ 
+   		createCanvas(400, 455);
+  		background(0x08, 0x16, 0x40);
+  		
+  		pg = createGraphics(255, 255);
+		pg.background(100);
+	  	pg.stroke(255); // white:
+	    //image(pg, 25, 25);
+   	}
+ 
+	function socket_on_open() {
+	    socket.send("Client says: Hello server");
+	    document.getElementById("socketStatusID").innerHTML = "Server Status: openSocket";
+	  }
+ 
+	function socket_on_close() {
+	    document.getElementById("socketStatusID").innerHTML = "Server Status: closeSocket";
+	  }
+ 
+	function socket_on_error() {
+	    document.getElementById("socketStatusID").innerHTML = "Server Status: errorSocket";
+	  }
+ 
+	//called when server sends us new data
+	function socket_on_data(result) {
+	    //data we receive is in format: millis(), a0, a1, a2
+	    //in future add an 'eventID' to incoming data so we can switch here to do different action
+	    //for now we just update DOM elements and plot with p5.js
+	    var resultString = result.data;
+	    var numbers = split(resultString, ",");
+	    
+	    // when the server returns, show the result in the div(s):
+	    document.getElementById("serverTimeID").innerHTML = "Server Time: " + numbers[0];
+	    document.getElementById("arduinoMillisID").innerHTML = "Arduino Millis: " + numbers[1];
+	    document.getElementById("sensorValueID").innerHTML = "Sensor Value: " + numbers[2];
+	    document.getElementById("xyDataID").innerHTML = "xyData: " + numbers[3] + "," + numbers[4];
+	    	    
+	    inString = result.data; // used in draw() to call graphData(inString)
+	    
+	    //console.log(resultString);
+	}
+  
+	function graphData(inString) {
+	  var timeSeriesHeight = 200
+	  
+	  //var resultString = inString;
+	  //var numbers = split(resultString, ",");
+	  
+	  // map the range of the input to the window height:
+	  var minSensorVal = 0;
+	  var maxSensorVal = 1;
+	  //var yPos = map(numbers[2], minSensorVal, maxSensorVal, 0, timeSeriesHeight);
+	  var yPos = map(inString.y, minSensorVal, maxSensorVal, 0, timeSeriesHeight);
+	  stroke(0xA8, 0xD9, 0xA7); // draw the line in a pretty color:
+	  line(xPos, timeSeriesHeight, xPos, timeSeriesHeight - yPos);
+	  
+	  if (xPos >= width) {
+		// at the edge of the p5 canvas, go back to the beginning:
+		xPos = 0;
+		// clear the p5 canvas by resetting the background:
+		background(0x08, 0x16, 0x40);
+	  } else {
+		// increment the horizontal position for the next reading:
+		xPos++;
+	  }
+	  
+	  // xy scatter
+	  //pg.point(numbers[3], numbers[4]);
+	  //image(pg, 20, 200);
+	  
+	}
+
+  	function draw() {
+		graphData(inString);
+	}
+
+ </script>
+ 
+ <meta charset="utf-8">
+ <title>Arduino + WebSocketServer + p5.js</title>
+ </head>
+
+ <body>
+ 
+ <P>
+ This is a p5.js plot of real-time sensor data coming from an arduino via a node WebSocketServer.
+ </p>
+ <p>
+ For this to work, we need a few things
+ 
+ <UL>
+ <LI>Arduino needs to be connected and runnnig code. Code is in ~/Sites/p5.realtime.plots/v1/platformio/src/main.cpp
+ <LI>Node server needs to be running and talking to the correct serial port (/dev/ttyACM0). Run node server with 'node ~/Sites/p5.realtime.plots/v1/node_serial_server.js'
+ <LI>index.html needs to be served by an actual http server. This should be running inside apache2 but for a more simple setup, use 'python -m SimpleHTTPServer'.
+ </UL>
+ 
+  
+ <div id="serialDataID">serialDataID</div>
+ <div id="newDataID">newDataID</div>
+ <div id="socketStatusID">Server Status: None</div>
+ <div id="serverTimeID"></div>
+ <div id="arduinoMillisID"></div>
+ <div id="sensorValueID"></div>
+ <div id="xyDataID"></div>
+ <BR>
+ 
+ </body>
+</html>

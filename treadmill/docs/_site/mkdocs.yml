@@ -1,0 +1,25 @@
+site_name: treadmill
+
+site_author: Robert H Cudmore
+
+site_favicon: favicon.ico
+
+theme: cinder
+#theme: readthedocs
+
+pages:
+- home: index.md
+- images: images.md
+- about: about.md
+
+include_next_prev: false
+include_search: false
+
+repo_url: http://github.com/cudmore/treadmill
+
+copyright: "Treadmill was created by Robert H Cudmore and is licensed under the <a href='https://github.com/cudmore/treadmill/blob/master/LICENSE'>MIT license</a>"
+
+
+extra:
+  include_search: false
+  #collapse_toc: true

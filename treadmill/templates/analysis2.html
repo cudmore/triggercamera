@@ -1,0 +1,266 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Treadmill Analysis2</title>
+    <script type="text/javascript" src="static/jquery-2.2.1.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
+
+    <script rel="stylesheet" src="static/spin.js"></script> 
+
+	<link type="text/css" rel="stylesheet" href="static/Font-Awesome-master/css/font-awesome.min.css">
+	<link type="text/css" rel="stylesheet" href="static/style.css">
+
+	<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+	<!-- new in this file -->
+    <script rel="stylesheet" src="static/d3.min.js"></script> 
+
+    <link rel="stylesheet" type="text/css" href="http://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.20/themes/redmond/jquery-ui.css" />
+
+    <link rel="stylesheet" type="text/css" href="http://www.ok-soft-gmbh.com/jqGrid/jquery.jqGrid-4.3.3/css/ui.jqgrid.css" />
+
+    <style type="text/css">
+		<!-- html, body { font-size: 75%; } -->
+        .ui-jqgrid tr.jqgrow td { font-size: 100%; height: 20px; }
+    </style>
+
+    <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.2.min.js"></script>
+
+    <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.20/jquery-ui.min.js"></script>
+
+    <script type="text/javascript" src="http://www.ok-soft-gmbh.com/jqGrid/jquery.jqGrid-4.3.3/js/i18n/grid.locale-en.js"></script>
+
+    <script type="text/javascript">
+        $.jgrid.no_legacy_api = true;
+        $.jgrid.useJSON = true;
+    </script>
+
+    <script type="text/javascript" src="http://www.ok-soft-gmbh.com/jqGrid/jquery.jqGrid-4.3.3/js/jquery.jqGrid.min.js"></script>
+
+    <script type="text/javascript" charset="utf-8">		
+
+        $(document).ready(function(){
+
+			console.log('document ready');
+
+			//var target = document.getElementById('myspinner');
+			var spinner = new Spinner()
+			
+            namespace = ''; // change to an empty string to use the global namespace
+
+            var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
+		
+            // event handler for new connections
+            socket.on('connect', function() {
+                socket.emit('my event', {data: 'I\'m connected!'});
+            });
+
+            socket.on('plotlyDiv', function(msg) {
+                var plotlyDivStr = msg.plotDiv;
+                $('#plotDiv').empty().append(plotlyDivStr);
+                spinner.stop();
+            });
+
+			//function makeplot() {
+			//	var fileName = 'data/treadmilldb.csv'
+			//	Plotly.d3.csv(fileName, function(data){ myjsGrid(data) } );
+			//};
+
+		var filename = 'data/treadmilldb.csv'
+		console.log('reading from server')
+		Plotly.d3.csv(filename, function(data) { mytable(data) } );
+		
+		function fuck(data) { 
+			console.log('fuck() data:', data)
+			myGlobalData = data
+		}
+
+    //$(function () {
+	function mytable(mydata) {
+	
+        'use strict';
+
+       //var mydata = [myGlobalData],
+/*
+       var mydata = [
+                { id: "1",  invdate: "2007-10-01", name: "test1",  note: "note1",  amount: "200.00", tax: "10.00", closed: true,  ship_via: "TN", total: "210.00" },
+                { id: "2",  invdate: "2007-10-02", name: "test2",  note: "note2",  amount: "300.00", tax: "20.00", closed: false, ship_via: "FE", total: "320.00" },
+                { id: "3",  invdate: "2007-09-01", name: "test3",  note: "note3",  amount: "400.00", tax: "30.00", closed: false, ship_via: "FE", total: "430.00" },
+                { id: "4",  invdate: "2007-10-04", name: "test4",  note: "note4",  amount: "200.00", tax: "10.00", closed: true,  ship_via: "TN", total: "210.00" },
+                { id: "5",  invdate: "2007-10-31", name: "test5",  note: "note5",  amount: "300.00", tax: "20.00", closed: false, ship_via: "FE", total: "320.00" },
+                { id: "6",  invdate: "2007-09-06", name: "test6",  note: "note6",  amount: "400.00", tax: "30.00", closed: false, ship_via: "FE", total: "430.00" },
+                { id: "7",  invdate: "2007-10-04", name: "test7",  note: "note7",  amount: "200.00", tax: "10.00", closed: true,  ship_via: "TN", total: "210.00" },
+                { id: "8",  invdate: "2007-10-03", name: "test8",  note: "note8",  amount: "300.00", tax: "20.00", closed: false, ship_via: "FE", total: "320.00" },
+                { id: "9",  invdate: "2007-09-01", name: "test9",  note: "note9",  amount: "400.00", tax: "30.00", closed: false, ship_via: "TN", total: "430.00" },
+                { id: "10", invdate: "2007-09-08", name: "test10", note: "note10", amount: "500.00", tax: "30.00", closed: true,  ship_via: "TN", total: "530.00" },
+                { id: "11", invdate: "2007-09-08", name: "test11", note: "note11", amount: "500.00", tax: "30.00", closed: false, ship_via: "FE", total: "530.00" },
+                { id: "12", invdate: "2007-09-10", name: "test12", note: "note12", amount: "500.00", tax: "30.00", closed: false, ship_via: "FE", total: "530.00" }
+            ],
+*/
+
+        //var mydata = myGlobalData,
+
+            //$grid = $("#list"),
+            var grid = $("#list"),
+
+            initDateEdit = function (elem) {
+
+                $(elem).datepicker({
+                    dateFormat: 'dd-M-yy',
+                    autoSize: true,
+                    changeYear: true,
+                    changeMonth: true,
+                    showButtonPanel: true,
+                    showWeek: true
+                });
+
+            },
+
+            initDateSearch = function (elem) {
+                setTimeout(function () {
+                    $(elem).datepicker({
+                        dateFormat: 'dd-M-yy',
+                        autoSize: true,
+                        changeYear: true,
+                        changeMonth: true,
+                        showWeek: true,
+                        showButtonPanel: true
+                    });
+                }, 100);
+            },
+
+            numberTemplate = {formatter: 'number', align: 'right', sorttype: 'number',
+                formatoptions: {thousandsSeparator: '', decimalPlaces:0},
+                editrules: {number: true, required: true},
+                searchoptions: { sopt: ['eq', 'ne', 'lt', 'le', 'gt', 'ge', 'nu', 'nn', 'in', 'ni'] }};
+
+		//jQuery("#list").jqGrid('filterToolbar', { stringResult: true, searchOnEnter: false, defaultSearch: "cn" });
+		//$("#grid").jqGrid('filterToolbar',{stringResult: true,searchOnEnter : false});
+        
+        //$grid.jqGrid({
+        grid.jqGrid({
+            
+            data: mydata,
+            datatype: "local",
+            
+//Idx,trial,date,time,t_trialNumber,t_Dur,t_preDur,t_postDur,t_numPulses,t_pulseDur,t_useMotor,t_motorDelay,t_motorDur,m_speed,m_maxSpeed,file_path,
+                //colNames: ['Client', 'Date', 'Amount', 'Tax', 'Total', 'Closed', 'Shipped via', 'Notes'],
+                colNames: ['Idx', 'Session', 'Trial', 'Date', 'Time', 'Trial2', 'Dur', 'preDur', 'postDur', 'Path'],
+
+                colModel: [
+
+                    { name: 'Idx', index: 'Idx', width: 45, editable: false, template: numberTemplate },
+                    { name: 'Session', index: 'Session', width: 80, editable: false },
+                    { name: 'trial', index: 'trial', width: 45, editable: false, template: numberTemplate },
+                    { name: 'date', index: 'date', width: 60, editable: true },
+                    { name: 'time', index: 'time', width: 60, editable: false  },
+
+                    { name: 'trialNumber', index: 'trialNumber', width: 45, editable: false, template: numberTemplate },
+                    { name: 'dur', index: 'dur', width: 45, editable: false, template: numberTemplate  },
+                    { name: 'preDur', index: 'preDur', width: 45, editable: false, template: numberTemplate },
+                    { name: 'postDur', index: 'postDur', width: 45, editable: false, template: numberTemplate  },
+
+
+                    { name: 'file_path', index: 'file_path', width: 400, editable: false  },
+
+/*
+                    { name: 'name', index: 'name', align: 'center', editable: true, width: 65, editrules: {required: true} },
+                    { name: 'invdate', index: 'invdate', width: 80, align: 'center', sorttype: 'date',
+                        formatter: 'date', formatoptions: { newformat: 'd-M-Y' }, editable: true, datefmt: 'd-M-Y',
+                        editoptions: { dataInit: initDateEdit },
+                        searchoptions: { sopt: ['eq', 'ne', 'lt', 'le', 'gt', 'ge'], dataInit: initDateSearch } },
+                    { name: 'amount', index: 'amount', width: 75, editable: true, template: numberTemplate },
+                    { name: 'tax', index: 'tax', width: 52, editable: true, template: numberTemplate },
+                    { name: 'total', index: 'total', width: 60, template: numberTemplate },
+                    {name: 'closed', index: 'closed', width: 70, align: 'center', editable: true, formatter: 'checkbox',
+                        edittype: 'checkbox', editoptions: {value: 'Yes:No', defaultValue: 'Yes'}, hidden: true,
+                        stype: 'select', searchoptions: { sopt: ['eq', 'ne'], value: ':Any;true:Yes;false:No' } },
+                    {name: 'ship_via', index: 'ship_via', width: 105, align: 'center', editable: true, formatter: 'select',
+                        edittype: 'select', editoptions: { value: 'FE:FedEx;TN:TNT;IN:Intim', defaultValue: 'IN' },
+                        stype: 'select', searchoptions: { sopt: ['eq', 'ne'], value: ':Any;FE:FedEx;TN:TNT;IN:IN' } },
+                    { name: 'note', index: 'note', width: 60, sortable: false, editable: true, edittype: 'textarea' }
+*/
+                ],
+
+			ondblClickRow: function(rowid) {
+			    //jQuery(this).jqGrid('editGridRow', rowid);
+			    console.log(rowid)
+			    var filepath = $('#list').jqGrid('getCell',rowid,'file_path');
+			    if (filepath) {
+			    	console.log(filepath)
+					spinner.spin(plotDiv)
+					socket.emit('plotTrialButtonID', {data: filepath});
+				}
+			},
+			
+            pager: '#pager',
+            //rowNum: 10,
+            rowList: [5, 10, 20, 50],
+            sortname: 'Idx',
+            sortorder: 'asc',
+            viewrecords: true,
+            gridview: true,
+            height: "100%",
+            width: "600",
+            shrinkToFit: false,
+            caption: "Trial Database",
+            
+        });
+    //});
+	}; //mytable
+
+			$("#refreshButtonID").click(function() {
+				$('#list').trigger( 'reloadGrid' );
+                return false;
+			});
+
+			$("#filterButtonID").click(function() {
+				var session = $('#sessionID').val();
+				console.log('filterButtonID:' + session)
+				socket.emit('filterTrial', {data: session});
+                return false;
+			});
+
+            //todo: fix this crap with data/ path peppering
+            socket.on('refreshList', function(msg) {
+		 		console.log('refreshList with filename:' + msg.data);
+		 		//$('#list').jqGrid('clearGridData');
+				//$('#list').trigger( 'reloadGrid' );
+				Plotly.d3.csv('data/' + msg.data, function(data) { reloadmytable(data) } );
+            });
+
+		function reloadmytable(mydata) {
+			console.log('reloadmytable' + mydata)
+		    $("#list").jqGrid('clearGridData')
+					.jqGrid('setGridParam', { 
+    			        datatype: 'local',
+    			        data:mydata
+   			     		})
+			        .trigger('reloadGrid', [{ page: 1}])
+					.trigger("reloadGrid");
+		}
+		
+		}) //document.ready
+
+    </script>
+
+</head>
+<body>
+<div class="page">
+
+	Session ID
+	<input id="sessionID" type="text">
+	<button id="filterButtonID" class="btn btn-primary btn-xs">Filter</button>
+
+	<button id="refreshButtonID" class="btn btn-primary btn-xs">refresh</button>
+	
+	<table id="list"><tr><td/></tr></table>
+	<div id="pager"></div>
+
+    <BR>
+    <div id="plotDiv">plotly</div> <!-- holds plotly plot -->
+
+
+</div>
+</body>
+</html>

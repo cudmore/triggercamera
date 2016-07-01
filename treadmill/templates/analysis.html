@@ -1,0 +1,150 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Treadmill Experiment</title>
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
+
+    <script src="http://code.highcharts.com/highcharts.js"></script> 
+
+    <script rel="stylesheet" src="static/spin.js"></script> 
+
+	<link rel="stylesheet" href="static/Font-Awesome-master/css/font-awesome.min.css">
+	<link rel="stylesheet" href="static/style.css">
+
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(function(){
+    
+			//var target = document.getElementById('myspinner');
+			var spinner = new Spinner(opts)
+			
+            namespace = ''; // change to an empty string to use the global namespace
+
+            var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
+		
+            // event handler for new connections
+            socket.on('connect', function() {
+                socket.emit('my event', {data: 'I\'m connected!'});
+            });
+
+            socket.on('headerDiv', function(msg) {
+                var headerStr = msg.headerStr;
+                var header = headerStr.split(';');
+                $('#headerDiv').empty()
+                var i;
+                for (i in header) {
+                	$('#headerDiv').append(header[i] + "<BR>");
+                }
+            });
+
+            socket.on('plotlyDiv', function(msg) {
+                var plotlyDivStr = msg.plotDiv;
+                $('#plotDiv').empty().append(plotlyDivStr);
+                spinner.stop();
+            });
+
+			//on file select, show header
+			$("#fileListDiv").click(function() {
+				var selectedFile = $('#fileListDiv option:selected').val();
+				socket.emit('plotTrialHeaderID', {data: selectedFile});
+			});
+			
+			//on file double click, plot
+			$("#fileListDiv").dblclick(function() {
+				var selectedFile = $('#fileListDiv option:selected').val();
+				console.log('selected file:' + selectedFile);
+
+				var target = document.getElementById('plotDiv');
+				//var target = document.getElementById('myspinner');
+				//var spinner = new Spinner(opts).spin(target);
+				spinner.spin(target);
+				
+				socket.emit('plotTrialButtonID', {data: selectedFile});
+                
+                
+                return false;
+			});
+
+			$("#plotTrialButtonID").click(function() {
+				var selectedFile = $('#fileListDiv option:selected').val();
+				if (selectedFile) {
+					console.log('selected file:' + selectedFile);
+					socket.emit('plotTrialButtonID', {data: selectedFile});
+                }
+                return false;
+			});
+			
+			var list = "{{list}}";
+
+			//see: http://stackoverflow.com/questions/5881033/how-to-generate-ul-li-list-from-string-array-using-jquery
+			function aa()
+			{
+				var YourArray = list.split(',');
+				//var YourArray = {{fileList}}
+				var ObjUl = $('<select id="trialListID" multiple style="z-index: 1; top: 100px; left: 100px; width: 324px; height: 400px;"></select>');
+				for (i = 0; i < YourArray.length; i++)
+				{
+					var Objli = $('<option></option>');
+
+					ObjUl.addClass("ui-menu-item");
+					ObjUl.attr("role", "menuitem");
+
+					//Obja.addClass("ui-all");
+					//Obja.attr("tabindex", "-1");
+
+					Objli.append(YourArray[i]);
+				
+					ObjUl.append(Objli);
+				}
+				$('.fileListDiv').append(ObjUl);  
+			}
+
+			aa();
+			
+			//spinner
+			var opts = {
+			  lines: 13, // The number of lines to draw
+			  length: 17, // The length of each line
+			  width: 8, // The line thickness
+			  radius: 21, // The radius of the inner circle
+			  corners: 1, // Corner roundness (0..1)
+			  rotate: 58, // The rotation offset
+			  direction: 1, // 1: clockwise, -1: counterclockwise
+			  color: '#fff', // #rgb or #rrggbb or array of colors
+			  speed: 0.9, // Rounds per second
+			  trail: 100, // Afterglow percentage
+			  shadow: false, // Whether to render a shadow
+			  hwaccel: false, // Whether to use hardware acceleration
+			  className: 'spinner', // The CSS class to assign to the spinner
+			  zIndex: 2e9, // The z-index (defaults to 2000000000)
+			  top: '50%', // Top position relative to parent
+			  left: '50%' // Left position relative to parent
+			};
+			
+		}) //document.ready
+
+
+    </script>
+
+</head>
+<body>
+
+    <table>
+    <tr>
+    <td>
+    <div class="fileListDiv" id="fileListDiv"></div>
+    </td>
+    <td>
+	<button id="plotTrialButtonID"><i class="fa fa-line-chart fa-2x"></i></button>
+	<div id="myspinner"></div>
+    <div id="headerDiv">header</div> <!-- holds header -->
+	</td>
+	</tr>
+	</table>
+	
+	
+    <BR>
+    <div id="plotDiv">plotly</div> <!-- holds plotly plot -->
+
+</body>
+</html>

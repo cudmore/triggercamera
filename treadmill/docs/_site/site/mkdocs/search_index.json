@@ -1,0 +1,154 @@
+{
+    "docs": [
+        {
+            "location": "/", 
+            "text": "Introduction\n\n\nControlling an experiment with an Arduino microcontroller has become commonplace in scientific labs. A major bottle-neck in making experiments controlled with an Arduino main-stream is the difficulty in their use. Once embedded into an experiment, the control of an Arduino often involves cognitively-demanding command line interaction which detracts from potentially complicated experiments. Thus, a simplified interface to control an Arduino during an experiment is necessary.\n\n\nHere, we present a simplified and experimentally fool-proof web interface to control an Arduino using a point-and-click web interface. In particular, we have built a motorized treadmill for in vivo head-fixed two-photon imaging. We provide schematics for building the treadmill as well as Arduino and Python code to control the treadmill.\n\n\nThis is a general-purpose open-source framework where Arduino based experiments can be controlled through a web interface. The source-code can be easily modified to meet new and unique experimental designs.\n\n\nWeb Interface\n\n\n\n\nThe top section provides an interface to start/stop a trial and plots real-time feedback as the trial is running.\n\n\nThe middle section provides an interface to set stimulus parameters for a trial and to upload these parameters to an Arduino. This section also provides a plot of what the trial will look like based on the set of parameters entered.\n\n\nArduino Setup\n\n\nHardware\n\n\n\n\n\n\nArduino Uno\n\n\n\n\n\n\nStepper Motor, \nSparkfun - 09238\n, $15\n\n\n\n\n\n\nStepper motor driver, EasyDriver, \nSparkfun - 12779\n, $15. Main website for \nEasyDriver\n\n\n\n\n\n\nRotary encoder, \nHoneywell-600-128-CBL\n, \n.pdf\n spec sheet, $37\n\n\n\n\n\n\nIR LED, 840-850 nm, \nSparkfun - 9469\n $1 each (960 nm IR LEDs do not work well with Pi Noir camera)\n\n\n\n\n\n\nActobotics at \nServoCity\n and \nSparkfun\n. Give \nServoCity\n a shot, their visual guides and project ideas are really helpful in desining components. This can be your one stop shop for all structural components including frames, rods, bearings, clamps, and motor mounts.\n\n\n\n\n\n\nWiring the arduino\n\n\n\n\nWire the stepper motor\n\n\nWire the stepper motor to the stepper motor driver\n\n\nWire the rotary encoder\n\n\nWire the DIO pins to communicate with ScanImage\n\n\n\n\nUpload code to the Arduino\n\n\nRequired libraries\n\n\nYou want to use these non-blocking libraries otherwise your code will not perform well. If you don't use these libraries then code to turn the stepper motor will block other code like reading the rotary encoder. \n\n\n\n\n\n\nAccelStepper\n library to control stepper motor\n\n\n\n\n\n\nRotary encoder library from \nPJRC\n\n\n\n\n\n\nUpload using the Arduino IDE\n\n\nThe source code for the Arduino can be found in \n/arduino/src/treadmill.cpp\n.\n\n\nUse the standard Arduino IDE to upload treadmill.cpp to your Arduino. Make sure you have the required Arduino libraries installed. Also be sure you understand how to activate addition \nlow level interrupts\n if using an Arduino Uno.\n\n\nUpload using platformio\n\n\nIf you prefer you can use \nPlatformio\n to do everything from a command line. This has the distinct advantage that you can compile and upload code from a headless computer including a Raspberry Pi or any system running Linux.\n\n\nPlatformio is a python library so you should be good to go with \npip install platformio\n. \n\n\nHave a look \nhere\n to create a platformio.ini file for your specific Arduino. Here are three different board configurations\n\n\nplatformio init --board uno # arduino uno\nplatformio init --board pro16MHzatmega328 # generic arduino pro \nplatformio init --board nodemcuv2 # arduino node mcu\n\n\n\n\nAfter 'platformio init', platformio.ini will have environment configurations. You only want to have one of these blocks at a time to simplify compilation. For example [env:uno].\n\n\n[env:uno]\nplatform = atmelavr\nframework = arduino\nboard = uno\nbuild_flags = -D _expose_interrupts_ #creates compiler directive\n\n[env:pro16MHzatmega328]\nplatform = atmelavr\nframework = arduino\nboard = pro16MHzatmega328\n\n[env:nodemcuv2]\nplatform = espressif\nframework = arduino\nboard = nodemcuv2\nupload_port = /dev/ttyUSB0\n\n\n\n\n\nCompile, upload, and clean Arduino code with\n\n\nplatformio run #compile arduino code\nplatformio run --target upload #compile and upload\nplatformio run --target clean #clean project \n\n\n\n\nFinally, once the code is running you can open a serial port connection with\n\n\nplatformio serialports monitor -p /dev/ttyUSB0 -b 115200 #a serial port monitor\n\n\n\n\nSpecifying the correct serial port for the Arduino is critical. Specify this in the treadmill.py file.\n\n\n#serialStr = '/dev/tty.usbmodem618661' #teensy at work\n#serialStr = '/dev/tty.usbmodem618661' #teensy?\n#serialStr = '/dev/ttyUSB0' #hand soldered arduino micro (home debian)\n#serialStr = '/dev/tty.usbserial-A50285BI' # hand soldered at work\nserialStr = '/dev/ttyACM0' #uno\n\n\n\n\n\n\nLow Level Interrupts\n\n\nThe Uno only comes with two pins (2 and 3) capable of low-level interrupts and more pins need to be broken out. We need two low level interrupts for the Rotary Encoder and a few more to quickly intercept TTL pulses of the FrameClock.\n\n\nSee \nPin-change interrupts\n for information on exposing additional pins as low-level interrupts.\n\n\nWe have included a compiler directive \n_expose_interrupts_\n in treadmill.cpp that if activated will run code to expose additional interrupts. \n\n\n\n\nIf using platformio this is taken care of in the [env] section of platformio.ini\n\n\nIf using the arduino IDE, \ndefine _expose_interrupts_ = 1\n must be included in \ntreadmill.cpp\n\n\n\n\n//Uncomment this line if running on an Arduino Uno and compiling with the arduino IDE\n//#define _expose_interrupts_ 1\n\n\n\n\nServer Setup\n\n\nPython\n\n\nDownload and install \nAnaconda\n. Anaconda is a \npython\n installation that will install many commonly used libraries. It is much easier to get started with Anaconda rather than a basic installation of Python.\n\n\nInstall required python libraries\n\n\nInstall additional required python libraries using the included requirements.txt file\n\n\npip install -r requirements.txt\n\n\nHere is the requirements.txt file\n\n\neventlet\n=0.18.4\nFlask\n=0.10.1\nFlask-Markdown\n=0.3\nFlask-SocketIO\n=1.0\nplatformio\n=2.8.5\nplotly\n=1.9.6\npyserial\n=3.0.1\n\n\n\n\nRunning an experiment\n\n\nAt its core, an experiment is run on the Arduino using \ntreadmill.cpp\n. We have provided two additional interfaces: a python interface and a web based interface.\n\n\nArduino interface\n\n\nThe Arduino program \ntreadmill.cpp\n provides a simple serial interface to get and set parameters of a trial and to start and stop a trial. Once the program is uploaded to an Arduino, open your favorite serial port and start entering commands.\n\n\nstartTrial # start a trial\nstopTrial # stop a trial\ngetState # \nsettrial,[name],[value]\n\n\n\n\nsettrial\n takes the \nname\n and \nvalue\n of a trial parameter to set. The \nname\n needs to be one of: numPulse, numEpoch, epochDur, preDur, etc. These names match the 'Stimulus' parameters provided in the web interface. See the SetTrial() function in \ntreadmill.cpp\n for all possible trial parameters.\n\n\nEntering \ngetState\n in a serial window and the Arduino will return the current values for all trial parameters. This is also a good way to find the names of trial parameters and then set them like \nsettrial,epochDur,5000\n.\n\n\n=== Arduino State ===\ntrialNumber=0\ntrialDur=1000\nnumEpoch=1\nepochDur=1000\npreDur=1000\npostDur=1000\nnumPulse=3\npulseDur=1000\nuseMotor=1\nmotorDel=200\nmotorDur=200\nmotorSpeed=0\nmotorMaxSpeed=0\nversionStr=20160322\n=== Done ===\n\n\n\n\nPython interface\n\n\nYou can  use iPython or any Python command interpreter to drive an experiment. You can also write your own python code to interface with the core python code in \ntreadmill.py\n.\n\n\nHere is a short example of running an experiment in Python\n\n\nimport treadmill\nt = treadmill.treadmill() # create a treadmill object\nt.startTrial() # start a new trial\nt.stopTrial() # stop a trial\nt.GetArduinoState() # get the current state with all trial parameters (see Arduino getstate below).\nt.settrial('epochDur',5000) # set the value of 'epochDur' trial parameter to 5000 ms\nt.startTrial() # start a new trial\n\n\n\n\nThe python interface and arduino interface share all trial parameter names.\n\n\nWeb interface\n\n\nA web interface is provided as a \nFlask\n server in \ntreadmill_app.py\n. Flask is a micro-framework that allows a web-server to be created and controlled all from within python.\n\n\nRun the web interface with \npython treadmill_app.py\n. This will run a web server at \nhttp://192.168.1.200:5000\n. You can change the default address and port in \ntreadmill_app.py\n\n\n#this will run Flask on the machines local ip (use this if on a lan)\nsocketio.run(app, host='0.0.0.0', port=5010, use_reloader=True)\n#this will run this on localhost, use this if using a single machine (no LAN needed)\nsocketio.run(app, host='', port=5010, use_reloader=True)\n\n\n\n\nRolling your own interface\n\n\nYou can roll your own interface by interfacing directly with the Arduino code in \ntreadmill.cpp\n, the python code in \ntreadmill.py\n, or the Flask server code in \ntreadmill_app.py\n.\n\n\nLinks\n\n\nFlask\n\n\n\n\n\n\nflask-socketio\n\n\n\n\n\n\nflask-markdown\n\n\n\n\n\n\neventlet\n\n\n\n\n\n\nArduino\n\n\n\n\n\n\nplatormio\n\n\n\n\n\n\nplatform io serial port monitor\n\n\n\n\n\n\nAccelStepper\n\n\n\n\n\n\nRotary Encoder", 
+            "title": "home"
+        }, 
+        {
+            "location": "/#introduction", 
+            "text": "Controlling an experiment with an Arduino microcontroller has become commonplace in scientific labs. A major bottle-neck in making experiments controlled with an Arduino main-stream is the difficulty in their use. Once embedded into an experiment, the control of an Arduino often involves cognitively-demanding command line interaction which detracts from potentially complicated experiments. Thus, a simplified interface to control an Arduino during an experiment is necessary.  Here, we present a simplified and experimentally fool-proof web interface to control an Arduino using a point-and-click web interface. In particular, we have built a motorized treadmill for in vivo head-fixed two-photon imaging. We provide schematics for building the treadmill as well as Arduino and Python code to control the treadmill.  This is a general-purpose open-source framework where Arduino based experiments can be controlled through a web interface. The source-code can be easily modified to meet new and unique experimental designs.", 
+            "title": "Introduction"
+        }, 
+        {
+            "location": "/#web-interface", 
+            "text": "The top section provides an interface to start/stop a trial and plots real-time feedback as the trial is running.  The middle section provides an interface to set stimulus parameters for a trial and to upload these parameters to an Arduino. This section also provides a plot of what the trial will look like based on the set of parameters entered.", 
+            "title": "Web Interface"
+        }, 
+        {
+            "location": "/#arduino-setup", 
+            "text": "", 
+            "title": "Arduino Setup"
+        }, 
+        {
+            "location": "/#hardware", 
+            "text": "Arduino Uno    Stepper Motor,  Sparkfun - 09238 , $15    Stepper motor driver, EasyDriver,  Sparkfun - 12779 , $15. Main website for  EasyDriver    Rotary encoder,  Honeywell-600-128-CBL ,  .pdf  spec sheet, $37    IR LED, 840-850 nm,  Sparkfun - 9469  $1 each (960 nm IR LEDs do not work well with Pi Noir camera)    Actobotics at  ServoCity  and  Sparkfun . Give  ServoCity  a shot, their visual guides and project ideas are really helpful in desining components. This can be your one stop shop for all structural components including frames, rods, bearings, clamps, and motor mounts.", 
+            "title": "Hardware"
+        }, 
+        {
+            "location": "/#wiring-the-arduino", 
+            "text": "Wire the stepper motor  Wire the stepper motor to the stepper motor driver  Wire the rotary encoder  Wire the DIO pins to communicate with ScanImage", 
+            "title": "Wiring the arduino"
+        }, 
+        {
+            "location": "/#upload-code-to-the-arduino", 
+            "text": "", 
+            "title": "Upload code to the Arduino"
+        }, 
+        {
+            "location": "/#required-libraries", 
+            "text": "You want to use these non-blocking libraries otherwise your code will not perform well. If you don't use these libraries then code to turn the stepper motor will block other code like reading the rotary encoder.     AccelStepper  library to control stepper motor    Rotary encoder library from  PJRC", 
+            "title": "Required libraries"
+        }, 
+        {
+            "location": "/#upload-using-the-arduino-ide", 
+            "text": "The source code for the Arduino can be found in  /arduino/src/treadmill.cpp .  Use the standard Arduino IDE to upload treadmill.cpp to your Arduino. Make sure you have the required Arduino libraries installed. Also be sure you understand how to activate addition  low level interrupts  if using an Arduino Uno.", 
+            "title": "Upload using the Arduino IDE"
+        }, 
+        {
+            "location": "/#upload-using-platformio", 
+            "text": "If you prefer you can use  Platformio  to do everything from a command line. This has the distinct advantage that you can compile and upload code from a headless computer including a Raspberry Pi or any system running Linux.  Platformio is a python library so you should be good to go with  pip install platformio .   Have a look  here  to create a platformio.ini file for your specific Arduino. Here are three different board configurations  platformio init --board uno # arduino uno\nplatformio init --board pro16MHzatmega328 # generic arduino pro \nplatformio init --board nodemcuv2 # arduino node mcu  After 'platformio init', platformio.ini will have environment configurations. You only want to have one of these blocks at a time to simplify compilation. For example [env:uno].  [env:uno]\nplatform = atmelavr\nframework = arduino\nboard = uno\nbuild_flags = -D _expose_interrupts_ #creates compiler directive\n\n[env:pro16MHzatmega328]\nplatform = atmelavr\nframework = arduino\nboard = pro16MHzatmega328\n\n[env:nodemcuv2]\nplatform = espressif\nframework = arduino\nboard = nodemcuv2\nupload_port = /dev/ttyUSB0  Compile, upload, and clean Arduino code with  platformio run #compile arduino code\nplatformio run --target upload #compile and upload\nplatformio run --target clean #clean project   Finally, once the code is running you can open a serial port connection with  platformio serialports monitor -p /dev/ttyUSB0 -b 115200 #a serial port monitor  Specifying the correct serial port for the Arduino is critical. Specify this in the treadmill.py file.  #serialStr = '/dev/tty.usbmodem618661' #teensy at work\n#serialStr = '/dev/tty.usbmodem618661' #teensy?\n#serialStr = '/dev/ttyUSB0' #hand soldered arduino micro (home debian)\n#serialStr = '/dev/tty.usbserial-A50285BI' # hand soldered at work\nserialStr = '/dev/ttyACM0' #uno", 
+            "title": "Upload using platformio"
+        }, 
+        {
+            "location": "/#low-level-interrupts", 
+            "text": "The Uno only comes with two pins (2 and 3) capable of low-level interrupts and more pins need to be broken out. We need two low level interrupts for the Rotary Encoder and a few more to quickly intercept TTL pulses of the FrameClock.  See  Pin-change interrupts  for information on exposing additional pins as low-level interrupts.  We have included a compiler directive  _expose_interrupts_  in treadmill.cpp that if activated will run code to expose additional interrupts.    If using platformio this is taken care of in the [env] section of platformio.ini  If using the arduino IDE,  define _expose_interrupts_ = 1  must be included in  treadmill.cpp   //Uncomment this line if running on an Arduino Uno and compiling with the arduino IDE\n//#define _expose_interrupts_ 1", 
+            "title": "Low Level Interrupts"
+        }, 
+        {
+            "location": "/#server-setup", 
+            "text": "", 
+            "title": "Server Setup"
+        }, 
+        {
+            "location": "/#python", 
+            "text": "Download and install  Anaconda . Anaconda is a  python  installation that will install many commonly used libraries. It is much easier to get started with Anaconda rather than a basic installation of Python.", 
+            "title": "Python"
+        }, 
+        {
+            "location": "/#install-required-python-libraries", 
+            "text": "Install additional required python libraries using the included requirements.txt file  pip install -r requirements.txt  Here is the requirements.txt file  eventlet =0.18.4\nFlask =0.10.1\nFlask-Markdown =0.3\nFlask-SocketIO =1.0\nplatformio =2.8.5\nplotly =1.9.6\npyserial =3.0.1", 
+            "title": "Install required python libraries"
+        }, 
+        {
+            "location": "/#running-an-experiment", 
+            "text": "At its core, an experiment is run on the Arduino using  treadmill.cpp . We have provided two additional interfaces: a python interface and a web based interface.", 
+            "title": "Running an experiment"
+        }, 
+        {
+            "location": "/#arduino-interface", 
+            "text": "The Arduino program  treadmill.cpp  provides a simple serial interface to get and set parameters of a trial and to start and stop a trial. Once the program is uploaded to an Arduino, open your favorite serial port and start entering commands.  startTrial # start a trial\nstopTrial # stop a trial\ngetState # \nsettrial,[name],[value]  settrial  takes the  name  and  value  of a trial parameter to set. The  name  needs to be one of: numPulse, numEpoch, epochDur, preDur, etc. These names match the 'Stimulus' parameters provided in the web interface. See the SetTrial() function in  treadmill.cpp  for all possible trial parameters.  Entering  getState  in a serial window and the Arduino will return the current values for all trial parameters. This is also a good way to find the names of trial parameters and then set them like  settrial,epochDur,5000 .  === Arduino State ===\ntrialNumber=0\ntrialDur=1000\nnumEpoch=1\nepochDur=1000\npreDur=1000\npostDur=1000\nnumPulse=3\npulseDur=1000\nuseMotor=1\nmotorDel=200\nmotorDur=200\nmotorSpeed=0\nmotorMaxSpeed=0\nversionStr=20160322\n=== Done ===", 
+            "title": "Arduino interface"
+        }, 
+        {
+            "location": "/#python-interface", 
+            "text": "You can  use iPython or any Python command interpreter to drive an experiment. You can also write your own python code to interface with the core python code in  treadmill.py .  Here is a short example of running an experiment in Python  import treadmill\nt = treadmill.treadmill() # create a treadmill object\nt.startTrial() # start a new trial\nt.stopTrial() # stop a trial\nt.GetArduinoState() # get the current state with all trial parameters (see Arduino getstate below).\nt.settrial('epochDur',5000) # set the value of 'epochDur' trial parameter to 5000 ms\nt.startTrial() # start a new trial  The python interface and arduino interface share all trial parameter names.", 
+            "title": "Python interface"
+        }, 
+        {
+            "location": "/#web-interface_1", 
+            "text": "A web interface is provided as a  Flask  server in  treadmill_app.py . Flask is a micro-framework that allows a web-server to be created and controlled all from within python.  Run the web interface with  python treadmill_app.py . This will run a web server at  http://192.168.1.200:5000 . You can change the default address and port in  treadmill_app.py  #this will run Flask on the machines local ip (use this if on a lan)\nsocketio.run(app, host='0.0.0.0', port=5010, use_reloader=True)\n#this will run this on localhost, use this if using a single machine (no LAN needed)\nsocketio.run(app, host='', port=5010, use_reloader=True)", 
+            "title": "Web interface"
+        }, 
+        {
+            "location": "/#rolling-your-own-interface", 
+            "text": "You can roll your own interface by interfacing directly with the Arduino code in  treadmill.cpp , the python code in  treadmill.py , or the Flask server code in  treadmill_app.py .", 
+            "title": "Rolling your own interface"
+        }, 
+        {
+            "location": "/#links", 
+            "text": "Flask    flask-socketio    flask-markdown    eventlet    Arduino    platormio    platform io serial port monitor    AccelStepper    Rotary Encoder", 
+            "title": "Links"
+        }, 
+        {
+            "location": "/images/", 
+            "text": "Prototype\n\n\nThis is the first prototype built on the scope.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nFinal\n\n\nThese are images of the final treadmill.\n\n\n[coming soon]", 
+            "title": "images"
+        }, 
+        {
+            "location": "/images/#prototype", 
+            "text": "This is the first prototype built on the scope.", 
+            "title": "Prototype"
+        }, 
+        {
+            "location": "/images/#final", 
+            "text": "These are images of the final treadmill.  [coming soon]", 
+            "title": "Final"
+        }, 
+        {
+            "location": "/about/", 
+            "text": "About\n\n\ntreadmill was created by \nRobert H Cudmore\n.\n\n\nDevelopment\n\n\nmkDocs\n\n\nThis documentation is written in markdown and a static site is generated with \nmkDocs\n using the \nCinder\n theme. Previously I have used Jekyll which is amazing. Going with mkDocs to see if a simple site is acceptable.\n\n\nWhen writing markdown, serve a mkDocs site locally with\n\n\ncd docs/\nmkdocs serve --dev-addr=0.0.0.0:8000 # serves built site on LAN IP\nmkdocs serve # serves built site on localhost at 127.0.0.1:8000\n\nmkdocs build #generates the site into docs/site/\n\n\n\n\nDeploy to github gh-pages by follow for \ndeployment instructions\n.\n\n\nmkdocs gh-deploy\n will use the gh-pages branch of repository specified in \nmkdocs.yml\n\n\n# this will deploy to github gh-pages specified in mkdocs.yml\ncd docs #should have mkdocs.yml file\nmkdocs gh-deploy --clean \n\n#site is then available at\nhttp://cudmore.github.io/treadmill\n\n\n\n\nTweak Cinder\n\n\nUse 'pip show mkdocs' to figure out where your cinder files are\n\n\n\n\n\n\npip show mkdocs\n/home/cudmore/anaconda2/lib/python2.7/site-packages\n\n\n\n\n\n\nDeploy to Github gh-pages\n\n\nFollowing the \nmkDocs\n help, deploy to github. Again, I am doing this on OSX. Not doing this on Debian because I do not have git/github properly configured.\n\n\n\n\n\n\nmkdocs build --clean\nmkdocs gh-deploy --clean\n\n\n\n\n\n\nGenerate a single PDF from mkDocs site\n\n\nUse \nmkdocs-pandoc\n to convert the mkdocs site into a single pdf. This creates a table of contents and appends all .md files using \npandoc\n as a backend.\n\n\ncd docs\nmkdocs2pandoc \n mydocs.pd\npandoc --toc -f markdown+grid_tables+table_captions -o mydocs.pdf mydocs.pd   # Generate PDF\npandoc --toc -f markdown+grid_tables -t epub -o mydocs.epub mydocs.pd         # Generate EPUB\n\n\n\n\nI found it easy to do this on OSX using the pandoc installer. I did not get this working on Debian.", 
+            "title": "about"
+        }, 
+        {
+            "location": "/about/#about", 
+            "text": "treadmill was created by  Robert H Cudmore .", 
+            "title": "About"
+        }, 
+        {
+            "location": "/about/#development", 
+            "text": "", 
+            "title": "Development"
+        }, 
+        {
+            "location": "/about/#mkdocs", 
+            "text": "This documentation is written in markdown and a static site is generated with  mkDocs  using the  Cinder  theme. Previously I have used Jekyll which is amazing. Going with mkDocs to see if a simple site is acceptable.  When writing markdown, serve a mkDocs site locally with  cd docs/\nmkdocs serve --dev-addr=0.0.0.0:8000 # serves built site on LAN IP\nmkdocs serve # serves built site on localhost at 127.0.0.1:8000\n\nmkdocs build #generates the site into docs/site/  Deploy to github gh-pages by follow for  deployment instructions .  mkdocs gh-deploy  will use the gh-pages branch of repository specified in  mkdocs.yml  # this will deploy to github gh-pages specified in mkdocs.yml\ncd docs #should have mkdocs.yml file\nmkdocs gh-deploy --clean \n\n#site is then available at\nhttp://cudmore.github.io/treadmill", 
+            "title": "mkDocs"
+        }, 
+        {
+            "location": "/about/#tweak-cinder", 
+            "text": "Use 'pip show mkdocs' to figure out where your cinder files are    pip show mkdocs\n/home/cudmore/anaconda2/lib/python2.7/site-packages", 
+            "title": "Tweak Cinder"
+        }, 
+        {
+            "location": "/about/#deploy-to-github-gh-pages", 
+            "text": "Following the  mkDocs  help, deploy to github. Again, I am doing this on OSX. Not doing this on Debian because I do not have git/github properly configured.    mkdocs build --clean\nmkdocs gh-deploy --clean", 
+            "title": "Deploy to Github gh-pages"
+        }, 
+        {
+            "location": "/about/#generate-a-single-pdf-from-mkdocs-site", 
+            "text": "Use  mkdocs-pandoc  to convert the mkdocs site into a single pdf. This creates a table of contents and appends all .md files using  pandoc  as a backend.  cd docs\nmkdocs2pandoc   mydocs.pd\npandoc --toc -f markdown+grid_tables+table_captions -o mydocs.pdf mydocs.pd   # Generate PDF\npandoc --toc -f markdown+grid_tables -t epub -o mydocs.epub mydocs.pd         # Generate EPUB  I found it easy to do this on OSX using the pandoc installer. I did not get this working on Debian.", 
+            "title": "Generate a single PDF from mkDocs site"
+        }
+    ]
+}
