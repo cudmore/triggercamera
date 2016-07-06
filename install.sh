@@ -65,4 +65,4 @@ sudo pip install -q platformio
 
 echo " "
 echo "Installation of required libraries for TriggerCamera is done."
-echo "If there were no errors, proceed with 'sh setup'
+echo "If there were no errors, proceed with 'sh setup'"
